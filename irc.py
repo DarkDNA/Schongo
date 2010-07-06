@@ -1,6 +1,6 @@
 import socket
 from threading import Thread;
-
+import logging
 
 class IrcOrigin:
 	nick = None
@@ -33,6 +33,7 @@ class IrcSocket(Thread):
 	_server = None
 	_port = 6667
 	connected = False
+	logger = None
 	
 	
 	def __init__(self, server=None, port=6667):
@@ -42,13 +43,16 @@ class IrcSocket(Thread):
 			self._server = server
 		self._port = port
 		
+		self.logger = logging.getLogger("IrcSocket")
+		
 	def connect(self):
 		
 		self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		try:
 			self._socket.connect((self._server, self._port))
 		except socket.error, message:
-			print("!!! Could not connect: %s" % message)
+			#print("!!! Could not connect: %s" % message)
+			self.logger.error("Could not connect: %s" % message)
 			return
 
 		self.connected = True
@@ -57,6 +61,7 @@ class IrcSocket(Thread):
 		
 		
 	def disconnect(self, reason=None):
+		self._socket.close()
 		pass
 		
 	def sendMessage(self, *msg, **kwargs):
@@ -71,7 +76,8 @@ class IrcSocket(Thread):
 		if 'end' in kwargs:
 			line += " :" + kwargs['end']
 				
-		print("<=" + line);
+		#print("<=" + line);
+		self.logger.debug("<= %s" % line)
 		
 		line += "\r\n"
 		
@@ -94,7 +100,8 @@ class IrcSocket(Thread):
 			buffer = data.pop()
 			for line in data:
 				line = line.strip()
-				print("=>" + line);
+				#print("=>" + line);
+				self.logger.debug("=> %s" % line)
 				self.onLine(line)
 	
 	def onLine(self, line):
@@ -123,7 +130,7 @@ class IrcSocket(Thread):
 			
 	def onMessage(self, msg):
 		if msg.command == "PING":
-			sendMessage("PONG", end=msg.args[0])
+			self.sendMessage("PONG", end=msg.args[0])
 			
 	def onConnected(self):
 		pass
@@ -175,7 +182,7 @@ class IrcClient(IrcSocket):
 			
 	
 	def onConnected(self):
-		print("@@@ Coookies");
+		self.logger.info("Connected")
 		self.nick = self.nicks[0]
 		self._nickPos = 0
 		self.sendMessage("USER", self.ident, "8", "*", end=self.realname)
