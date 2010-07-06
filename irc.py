@@ -17,12 +17,14 @@ class IrcOrigin:
 		
 	def __str__(self):
 		return "%s!%s@%s" % (self.nick, self.ident, self.host)
-
+		
 class IrcMessage:
 	"""Holds the meta info for an IRC Message"""
 	origin = None
 	command = None
 	args = None
+	
+
 # This parses the raw IRC Protocol and breaks it down into seperate events
 # This allows us to seperate the protocol structure from the logic
 class IrcSocket(Thread):
@@ -85,7 +87,7 @@ class IrcSocket(Thread):
 				data = self._socket.recv(512)
 			except socket.error:
 				pass
-			if data is 0 or not self.connected:
+			if data == 0 or not self.connected:
 				self.onDisconnected()
 				return
 			data = (buffer + data).split("\n")
@@ -153,7 +155,7 @@ class IrcClient(IrcSocket):
 
 	# Our API.
 	
-	def join(self, channel, password=None):
+	def join_channel(self, channel, password=None):
 		if password is not None:
 			self.sendMessage("JOIN", channel, password)
 		else:
@@ -162,12 +164,12 @@ class IrcClient(IrcSocket):
 	def say(self, channel, msg):
 		self.sendMessage("PRIVMSG", channel, end=msg)
 	
-	def part(self, channel, reason=None):
+	def part_channel(self, channel, reason=None):
 		self.sendMessage("PART", channel, end=reason)
 		
 	def disconnect(self, reason=None):
 		self.sendMessage("QUIT", end=reason)
-		super.disconnect(self, reason)
+		IrcSocket.disconnect(self, reason)
 		
 	# Overwritten events
 			
@@ -186,6 +188,15 @@ class IrcClient(IrcSocket):
 	
 	def onNickChange(self, newnick):
 		pass
+		
+	def onNick(self, old, new):
+		pass
+	
+	def onMsg(self, chan, who, what):
+		pass
+	
+	def onAction(self, chan, who, what):
+		pass
 	
 	
 	# IRC Events
@@ -195,12 +206,27 @@ class IrcClient(IrcSocket):
 			if msg.origin.nick == self.nick:
 				self.nick = msg.args[0]
 				self.onNickChange(nick)
+			else:
+				self.onNick(msg.origin, nick)
 		elif msg.command == "443":
 			self._nickPos += 1
 			if self._nickPos > len(self.nicks):
 				self.disconnect("No nicks Left")
 			self.nick = self.nicks[self._nickPos]
 			self.sendMessage("NICK", self.nick)
+		elif msg.command == "PRIVMSG":
+			channel = msg.args[0]
+			message = msg.args[1]
+			if message[0] == "\u001" and message[-1] == "\u001":
+				body = message[1:-1];
+				parts = body.split(' ')
+				cmd = parts[0]
+				args = parts[1]
+				if cmd == "ACTION":
+					self.onAction(channel, msg.origin, ' '.join(args))
+				else:
+					self.onCtcp(channel, msg.origin, cmd, args)
+			self.onMsg(channel, msg.origin, message)
 		else:
 			IrcSocket.onMessage(self, msg)
 	
