@@ -120,23 +120,29 @@ hook = lambda h : hook_mod("__init__", h)
 	
 # Core Code
 	
-@command("load_module", 1)
-def load_mod_cmd(ctx, cmd, arg, *args):
-	for mod in args:
-		try:
-			load_module(mod)
-		except Exception, e:
-			ctx.reply("[Load Module] Error loading %s: %s" % (mod,e))
-	ctx.reply("[Load Module] Done.")
-	
-@command("unload_module", 1)
-def unload_mod_cmd(ctx, cmd, arg, *args):
-	for mod in args:
-		try:
-			unload_module(mod)
-		except Exception, e:
-			ctx.reply("[Unload Module] Error unloading %s: %s" % (mod,e))
-	ctx.reply("[Unload Module] Done.")
+@command("load", 2)
+def load_mod_cmd(ctx, cmd, arg, what, *args):
+	if what == "module" or what == "mod":
+		for mod in args:
+			try:
+				load_module(mod)
+			except Exception, e:
+				ctx.reply("[Load Module] Error loading %s: %s" % (mod,e))
+		ctx.reply("[Load Module] Done.")
+	else:
+		ctx.reply("[Error] Unknown 'load' sub-command: %s" % what);
+
+@command("unload", 2)
+def unload_mod_cmd(ctx, cmd, arg, what, *args):
+	if what == "module" or what == "mod":
+		for mod in args:
+			try:
+				unload_module(mod)
+			except Exception, e:
+				ctx.reply("[Unload Module] Error unloading %s: %s" % (mod,e))
+		ctx.reply("[Unload Module] Done.")
+	else:
+		ctx.reply("[Error] Unknown 'unload' sub-command: %s" % what);
 	
 
 def handle_command(ctx, line):
