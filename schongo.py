@@ -3,6 +3,8 @@ import logging
 import json
 import modules
 
+version = "0.1a"
+
 class SchongoClient(IrcClient):
 	def __init__(self):
 		IrcClient.__init__(self,
@@ -27,6 +29,12 @@ class SchongoClient(IrcClient):
 	
 	def onAction(self, chan, who, what):
 		modules.fire_hook("action", modules.IrcContext(self, chan, who), what)
+	
+	def onCtcp(self, chan, who, cmd, arg):
+		if cmd == "VERSION":
+			self.notice(who.nick, "\x01VERSION Schongo Bot %s\x01" % version)
+		else:
+			modules.fire_hook("ctcp", modules.IrcContext(self, chan, who), what)
 
 def main():
 	logging.basicConfig(level=logging.WARN)
