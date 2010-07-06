@@ -1,5 +1,4 @@
-"""
-Provides remote-control functionality to Schongo
+"""Provides remote-control functionality to Schongo
 """
 
 def onLoad():

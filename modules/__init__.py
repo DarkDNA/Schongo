@@ -99,11 +99,12 @@ def unload_module(mod):
 # Decorators
 global command, hook;
 
-def command_mod(mod, name, args=-1):
+def command_mod(mod, name, min=-1, max=-1):
 	def retCmd(f):
-		commands[name] = f;
-		f._mod = mod;
-		f._args = args
+		commands[name] = f
+		f._mod = mod
+		f._min = min
+		f._max = max
 		return f
 	return retCmd
 
@@ -121,7 +122,7 @@ hook = lambda h : hook_mod("__init__", h)
 # Core Code
 	
 @command("load", 2)
-def load_mod_cmd(ctx, cmd, arg, what, *args):
+def load_cmd(ctx, cmd, arg, what, *args):
 	if what == "module" or what == "mod":
 		for mod in args:
 			try:
@@ -133,7 +134,7 @@ def load_mod_cmd(ctx, cmd, arg, what, *args):
 		ctx.reply("[Error] Unknown 'load' sub-command: %s" % what);
 
 @command("unload", 2)
-def unload_mod_cmd(ctx, cmd, arg, what, *args):
+def unload_cmd(ctx, cmd, arg, what, *args):
 	if what == "module" or what == "mod":
 		for mod in args:
 			try:
@@ -143,7 +144,51 @@ def unload_mod_cmd(ctx, cmd, arg, what, *args):
 		ctx.reply("[Unload Module] Done.")
 	else:
 		ctx.reply("[Error] Unknown 'unload' sub-command: %s" % what);
-	
+
+@command("info", 2)
+def info_cmd(ctx, cmd, arg, what, *args):
+	if what == "module" or what == "mod":
+		ctx.reply("Information available for module %s:" % args[0])
+		try:
+			mod = mods[args[0]]
+			doc = mod.__doc__.split("\n", 1)[0];
+			if doc == "":
+				doc = "*** This module doesn't provide a doc string, yell at the author."
+			ctx.reply("[%s] %s" % (args[0], doc))
+			try:
+				info = mod.__info__
+				ctx.reply("[%s] Author: %s" % (args[0], info['Author']))
+				ctx.reply("[%s] Version: %s" % (args[0], info['Version']))
+			except AttributeError:
+				ctx.reply("[%s] Additional information not available" % args[0])
+		except KeyError:
+			ctx.reply("[[ Information not available as module is not loaded. ]]")
+	elif what == "command" or what == "cmd":
+		c = args[0]
+		if c in commands:
+			#ctx.reply("Info for command %s" % c)
+			#ctx.reply("[%s] %d min args" % (c, c._args))
+			s = "[Info] Information for command %s" % c
+			if commands[c]._mod != "__init__":
+				s += " from module %s" % commands[c]._mod
+			minarg = commands[c]._min
+			maxarg = commands[c]._max
+			if minarg != -1 and maxarg == -1:
+				s += ": Takes atleast %d args" % minarg
+			elif minarg == -1 and maxarg == -1:
+				s += ": Takes any number of arguments"
+			elif minarg == maxarg:
+				s += ": Takes exactly %d arguments" % minarg
+			elif minarg != -1 and maxarg != -1:
+				s += ": Takes between %d and %d arguments" % (minarg, maxarg)
+			else:
+				s += ": ** This should never happen **"
+
+			ctx.reply(s)
+		else:
+			ctx.reply("I don't seem to have any data available for that command.")
+	else:
+		ctx.reply("[Error] Unknown info element: %s" % what)
 
 def handle_command(ctx, line):
 	parts = line.split(' ',1)
@@ -156,11 +201,12 @@ def handle_command(ctx, line):
 		args = []
 	if cmd in commands:
 		cmdf = commands[cmd];
-		if cmdf._args == -1:
+		# TODO: Implement Max args
+		if cmdf._min == -1:
 			# Dumb command
 			cmdf(ctx, cmd, arg);
-		elif len(args) < cmdf._args:
-			ctx.reply("[Error] The command %s takes atleast %d arguments, %d given." % (cmd, cmdf._args, len(args)))
+		elif len(args) < cmdf._min:
+			ctx.reply("[Error] The command %s takes atleast %d arguments, %d given." % (cmd, cmdf._min, len(args)))
 		else:
 			commands[cmd](ctx, cmd, arg, *args)
 	else:
