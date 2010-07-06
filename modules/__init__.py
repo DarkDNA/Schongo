@@ -8,7 +8,7 @@ mods = {}
 logger = logging.getLogger("Modules")
 
 class IrcContext:
-	""" Holds three important context things, and provides some helper methods."""
+	""" Holds three important context things, and provides some helper methods for quickly replying."""
 	irc = None
 	chan = None
 	who = None
@@ -24,6 +24,12 @@ class IrcContext:
 			self.irc.say(self.who.nick, msg)
 		else:
 			self.irc.say(self.chan, msg)
+		
+	def notice(self, msg):
+		self.irc.notice(self.who.nick, msg)
+	
+	def ctcp_reply(self, cmd, arg):
+		self.notice("\x01%s %s\x01" % (cmd, arg))
 
 # Commands
 		
@@ -37,7 +43,8 @@ def fire_hook(hook, *args, **kw):
 	
 def load_module(mod):
 	if mod in mods:
-		print("@@@ Module `%s' already loaded" % mod)
+		#print("@@@ Module `%s' already loaded" % mod)
+		logger.warn("Module {mod} already loaded, unloading.".format(mod=mod));
 		unload_module(mod)
 	
 	# Begin ze actual loadink!
@@ -45,7 +52,7 @@ def load_module(mod):
 	theMod = __import__(mod, globals(), locals(), [], -1)
 	theMod.command = lambda *a, **kw : command_mod(mod, *a, **kw)
 	theMod.hook = lambda h : hook_mod(mod, h)
-	theMod.logger = logging.getLogger("module." + mod)
+	theMod.logger = logging.getLogger("module.%s" % mod)
 	
 	# Used to give more decorators for other advanced functionality. :)
 	#   Say, @variable
@@ -132,24 +139,29 @@ def unload_mod_cmd(ctx, cmd, arg, *args):
 	ctx.reply("[Unload Module] Done.")
 	
 
+def handle_command(ctx, line):
+	parts = line.split(' ',1)
+	cmd = parts[0]
+	if len(parts) > 1:
+		arg = parts[1]
+		args = arg.split(' ')
+	else:
+		arg = ""
+		args = []
+	if cmd in commands:
+		cmdf = commands[cmd];
+		if cmdf._args == -1:
+			# Dumb command
+			cmdf(ctx, cmd, arg);
+		elif len(args) < cmdf._args:
+			ctx.reply("[Error] The command %s takes atleast %d arguments, %d given." % (cmd, cmdf._args, len(args)))
+		else:
+			commands[cmd](ctx, cmd, arg, *args)
 	
 @hook("message")
 def command_processor(ctx, msg):
 	if msg[0] == "@":
-		parts = msg[1:].split(' ',1)
-		cmd = parts[0]
-		if len(parts) > 1:
-			arg = parts[1]
-			args = arg.split(' ')
-		else:
-			arg = ""
-			args = []
-		if cmd in commands:
-			cmdf = commands[cmd];
-			if cmdf._args == -1:
-				# Dumb command
-				cmdf(ctx, cmd, arg);
-			elif len(args) < cmdf._args:
-				ctx.reply("[Error] The command %s takes atleast %d arguments, %d given." % (cmd, cmdf._args, len(args)))
-			else:
-				commands[cmd](ctx, cmd, arg, *args)
+		handle_command(ctx, msg[1:])
+	elif msg.startswith('%s: ' % ctx.irc.nick):
+		handle_command(ctx, msg[len('%s: ' % ctx.irc.nick):]);
+		
