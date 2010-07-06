@@ -170,6 +170,9 @@ class IrcClient(IrcSocket):
 	
 	def say(self, channel, msg):
 		self.sendMessage("PRIVMSG", channel, end=msg)
+		
+	def notice(self, target, msg):
+		self.sendMessage("NOTICE", target, end=msg)
 	
 	def part_channel(self, channel, reason=None):
 		self.sendMessage("PART", channel, end=reason)
@@ -178,17 +181,12 @@ class IrcClient(IrcSocket):
 		self.sendMessage("QUIT", end=reason)
 		IrcSocket.disconnect(self, reason)
 		
-	# Overwritten events
-			
-	
-	def onConnected(self):
-		self.logger.info("Connected")
+	def connect(self):
+		IrcSocket.connect(self)
 		self.nick = self.nicks[0]
 		self._nickPos = 0
 		self.sendMessage("USER", self.ident, "8", "*", end=self.realname)
 		self.sendMessage("NICK", self.nick)
-		
-	
 		
 		
 	# Our events
@@ -224,16 +222,22 @@ class IrcClient(IrcSocket):
 		elif msg.command == "PRIVMSG":
 			channel = msg.args[0]
 			message = msg.args[1]
-			if message[0] == "\u001" and message[-1] == "\u001":
+			if message[0] == "\x01" and message[-1] == "\x01":
 				body = message[1:-1];
-				parts = body.split(' ')
+				parts = body.split(' ', 1)
 				cmd = parts[0]
-				args = parts[1]
-				if cmd == "ACTION":
-					self.onAction(channel, msg.origin, ' '.join(args))
+				if len(parts) > 1:
+					arg = parts[1]
 				else:
-					self.onCtcp(channel, msg.origin, cmd, args)
+					arg = None
+				if cmd == "ACTION":
+					self.onAction(channel, msg.origin, arg)
+				else:
+					self.onCtcp(channel, msg.origin, cmd, arg)
 			self.onMsg(channel, msg.origin, message)
+		elif msg.command == "001":
+			# We've successfuly connected, partay!
+			self.onConnected()
 		else:
 			IrcSocket.onMessage(self, msg)
 	
