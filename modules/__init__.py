@@ -157,6 +157,8 @@ def handle_command(ctx, line):
 			ctx.reply("[Error] The command %s takes atleast %d arguments, %d given." % (cmd, cmdf._args, len(args)))
 		else:
 			commands[cmd](ctx, cmd, arg, *args)
+	else:
+		fire_hook("command", ctx, cmd, arg, args)
 	
 @hook("message")
 def command_processor(ctx, msg):
