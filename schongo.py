@@ -19,8 +19,8 @@ class SchongoClient(IrcClient):
 		self.join_channel("#lobby")
 	
 	def onDisconnected(self):
-		IrcClient.onDisconnected(self)
 		modules.fire_hook("disconnected", self)
+		IrcClient.onDisconnected(self)
 	
 	def onMsg(self, chan, who, what):
 		modules.fire_hook("message", modules.IrcContext(self, chan, who), what)
@@ -29,13 +29,8 @@ class SchongoClient(IrcClient):
 		modules.fire_hook("action", modules.IrcContext(self, chan, who), what)
 
 def main():
-	"""conn = irc.IrcClient(
-		server="irc.darkdna.net",
-		port=6667,
-		nicks=["Schongo"],
-		ident="schongo",
-		realname="Schongo Beever"
-	);"""
+	logging.basicConfig(level=logging.WARN)
+
 	conn = SchongoClient();
 	conn.connect()
 

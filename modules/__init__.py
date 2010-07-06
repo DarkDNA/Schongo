@@ -1,8 +1,11 @@
 import sys
+import logging
 
 commands = {}
 hooks = {}
 mods = {}
+
+logger = logging.getLogger("Modules")
 
 class IrcContext:
 	""" Holds three important context things, and provides some helper methods."""
@@ -27,7 +30,10 @@ class IrcContext:
 def fire_hook(hook, *args, **kw):
 	if hook in hooks:
 		for m in hooks[hook]:
-			hooks[hook][m](*args, **kw)
+			try:
+				hooks[hook][m](*args, **kw)
+			except Exception, e:
+				logger.warn("Hook {hook} crashed for module {module}: {exc}".format(hook=hook, module=m, exc=e))
 	
 def load_module(mod):
 	if mod in mods:
@@ -37,8 +43,13 @@ def load_module(mod):
 	# Begin ze actual loadink!
 	
 	theMod = __import__(mod, globals(), locals(), [], -1)
-	theMod.command = lambda cmd : command_mod(mod, cmd)
+	theMod.command = lambda *a, **kw : command_mod(mod, *a, **kw)
 	theMod.hook = lambda h : hook_mod(mod, h)
+	theMod.logger = logging.getLogger("module." + mod)
+	
+	# Used to give more decorators for other advanced functionality. :)
+	#   Say, @variable
+	fire_hook("module_preload", mod, theMod)
 	
 	try:
 		theMod.onLoad()
@@ -81,10 +92,11 @@ def unload_module(mod):
 # Decorators
 global command, hook;
 
-def command_mod(mod, name):
+def command_mod(mod, name, args=-1):
 	def retCmd(f):
 		commands[name] = f;
 		f._mod = mod;
+		f._args = args
 		return f
 	return retCmd
 
@@ -96,12 +108,12 @@ def hook_mod(mod, hook):
 		return f
 	return retHook	
 
-command = lambda c : command_mod("__init__", c)
-hook = lambda c : hook_mod("__init__", c)
+command = lambda *a, **kw : command_mod("__init__", *a, **kw)
+hook = lambda h : hook_mod("__init__", h)
 	
 # Core Code
 	
-@command("load_module")
+@command("load_module", 1)
 def load_mod_cmd(ctx, cmd, arg, *args):
 	for mod in args:
 		try:
@@ -110,7 +122,7 @@ def load_mod_cmd(ctx, cmd, arg, *args):
 			ctx.reply("[Load Module] Error loading %s: %s" % (mod,e))
 	ctx.reply("[Load Module] Done.")
 	
-@command("unload_module")
+@command("unload_module", 1)
 def unload_mod_cmd(ctx, cmd, arg, *args):
 	for mod in args:
 		try:
@@ -128,8 +140,16 @@ def command_processor(ctx, msg):
 		cmd = parts[0]
 		if len(parts) > 1:
 			arg = parts[1]
+			args = arg.split(' ')
 		else:
 			arg = ""
-		args = arg.split(' ')
+			args = []
 		if cmd in commands:
-			commands[cmd](ctx, cmd, arg, *args)
+			cmdf = commands[cmd];
+			if cmdf._args == -1:
+				# Dumb command
+				cmdf(ctx, cmd, arg);
+			elif len(args) < cmdf._args:
+				ctx.reply("[Error] The command %s takes atleast %d arguments, %d given." % (cmd, cmdf._args, len(args)))
+			else:
+				commands[cmd](ctx, cmd, arg, *args)
