@@ -210,9 +210,9 @@ class IrcClient(IrcSocket):
 		if msg.command == "NICK":
 			if msg.origin.nick == self.nick:
 				self.nick = msg.args[0]
-				self.onNickChange(nick)
+				self.onNickChange(self.nick)
 			else:
-				self.onNick(msg.origin, nick)
+				self.onNick(msg.origin, msg.args[0])
 		elif msg.command == "443":
 			self._nickPos += 1
 			if self._nickPos > len(self.nicks):
