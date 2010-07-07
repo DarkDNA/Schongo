@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from irc import IrcClient
 import logging
 import json
