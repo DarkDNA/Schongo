@@ -147,14 +147,14 @@ def unload_cmd(ctx, cmd, arg, what, *args):
 	else:
 		ctx.reply("[Error] Unknown 'unload' sub-command: %s" % what);
 
-@command("info", 2)
+@command("info", 2, 2)
 def info_cmd(ctx, cmd, arg, what, *args):
 	"""info <module|command> <data>"""
 	if what == "module" or what == "mod":
 		ctx.reply("Information available for module %s:" % args[0])
 		try:
 			mod = mods[args[0]]
-			doc = mod.__doc__.split("\n", 1)[0];
+			doc = dbgmod.__doc__.split("\n", 1)[0];
 			if doc == "":
 				doc = "*** This module doesn't provide a doc string, yell at the author."
 			ctx.reply("[%s] %s" % (args[0], doc))
