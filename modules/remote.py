@@ -14,10 +14,7 @@ def onLoad():
 	def hello_cmd(ctx, cmd, arg, who):
 		ctx.reply("Hello, %s!" % who)
 		
-	@command("shutdown")
-	def shutdown_cmd(ctx, cmd, arg):
-		ctx.irc.disconnect(arg)
-		
+	
 	@command("eval")
 	def eval_cmd(ctx, cmd, arg):
 		exec arg

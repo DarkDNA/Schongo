@@ -123,6 +123,7 @@ hook = lambda h : hook_mod("__init__", h)
 	
 @command("load", 2)
 def load_cmd(ctx, cmd, arg, what, *args):
+	"""load module <mod1> [mod2]..."""
 	if what == "module" or what == "mod":
 		for mod in args:
 			try:
@@ -135,6 +136,7 @@ def load_cmd(ctx, cmd, arg, what, *args):
 
 @command("unload", 2)
 def unload_cmd(ctx, cmd, arg, what, *args):
+	"""unload module <mod1> [mod2]..."""
 	if what == "module" or what == "mod":
 		for mod in args:
 			try:
@@ -147,6 +149,7 @@ def unload_cmd(ctx, cmd, arg, what, *args):
 
 @command("info", 2)
 def info_cmd(ctx, cmd, arg, what, *args):
+	"""info <module|command> <data>"""
 	if what == "module" or what == "mod":
 		ctx.reply("Information available for module %s:" % args[0])
 		try:
@@ -169,26 +172,40 @@ def info_cmd(ctx, cmd, arg, what, *args):
 			#ctx.reply("Info for command %s" % c)
 			#ctx.reply("[%s] %d min args" % (c, c._args))
 			s = "[Info] Information for command %s" % c
-			if commands[c]._mod != "__init__":
-				s += " from module %s" % commands[c]._mod
 			minarg = commands[c]._min
 			maxarg = commands[c]._max
 			if minarg != -1 and maxarg == -1:
-				s += ": Takes atleast %d args" % minarg
+					s += "(>%d)" % (minarg - 1)
 			elif minarg == -1 and maxarg == -1:
-				s += ": Takes any number of arguments"
+				s += "(Any)"
 			elif minarg == maxarg:
-				s += ": Takes exactly %d arguments" % minarg
+				s += "(%d)" % minarg
 			elif minarg != -1 and maxarg != -1:
-				s += ": Takes between %d and %d arguments" % (minarg, maxarg)
+				s += "(%d to %d)" % (minarg, maxarg)
 			else:
 				s += ": ** This should never happen **"
+			if commands[c]._mod != "__init__":
+				s += " from module %s: " % commands[c]._mod
+			else:
+				s += ": "
+
+			usage = (commands[c].__doc__ or "").split("\n", 1)[0];
+			if usage != "":
+				s += usage
+			else:
+				s += "[[ No usage info given. ]]"
 
 			ctx.reply(s)
 		else:
 			ctx.reply("I don't seem to have any data available for that command.")
 	else:
 		ctx.reply("[Error] Unknown info element: %s" % what)
+
+@command("shutdown")
+def shutdown_cmd(ctx, cmd, arg):
+	ctx.irc.disconnect(arg)
+	
+
 
 def handle_command(ctx, line):
 	parts = line.split(' ',1)
