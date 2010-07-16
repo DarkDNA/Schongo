@@ -3,6 +3,8 @@ from irc import IrcClient
 import logging
 import json
 import modules
+import sys
+import getopt
 
 version = "0.1a"
 
@@ -37,8 +39,18 @@ class SchongoClient(IrcClient):
 		else:
 			modules.fire_hook("ctcp", modules.IrcContext(self, chan, who), what)
 
-def main():
-	logging.basicConfig(level=logging.WARN)
+def main(argv):
+	opts, args = getopt.getopt(argv, "v:c", [ "debug", "config=" ])
+	print(opts)
+
+	debug = False
+
+	for arg,val in opts:
+		if arg == "--debug" or arg == "v":
+			debug = True
+	logging.basicConfig(level=(debug and logging.DEBUG or logging.WARN))
+	if debug:
+		logging.info("Debug mode activated")
 
 	conn = SchongoClient();
 	conn.connect()
@@ -47,5 +59,4 @@ def main():
 	return conn
 	
 if __name__ == "__main__":
-	main()
-
+	main(sys.argv[1:])

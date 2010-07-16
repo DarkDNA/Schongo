@@ -213,7 +213,7 @@ class IrcClient(IrcSocket):
 				self.onNickChange(self.nick)
 			else:
 				self.onNick(msg.origin, msg.args[0])
-		elif msg.command == "443":
+		elif msg.command == "433":
 			self._nickPos += 1
 			if self._nickPos > len(self.nicks):
 				self.disconnect("No nicks Left")
