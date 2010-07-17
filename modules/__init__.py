@@ -4,6 +4,9 @@ import logging
 commands = {}
 hooks = {}
 mods = {}
+cfg_basic = None
+config = None
+connections = {}
 
 logger = logging.getLogger("Modules")
 
@@ -41,6 +44,13 @@ def fire_hook(hook, *args, **kw):
 			except Exception, e:
 				logger.warn("Hook {hook} crashed for module {module}: {exc}".format(hook=hook, module=m, exc=e))
 	
+
+# Methods
+
+def init():
+	for i in cfg_basic.getlist("autoload modules"):
+		load_module(i);
+
 def load_module(mod):
 	if mod in mods:
 		#print("@@@ Module `%s' already loaded" % mod)
@@ -231,7 +241,7 @@ def handle_command(ctx, line):
 	
 @hook("message")
 def command_processor(ctx, msg):
-	if msg[0] == "@":
+	if msg[0] == cfg_basic.get("prefix char"):
 		handle_command(ctx, msg[1:])
 	elif msg.startswith('%s: ' % ctx.irc.nick):
 		handle_command(ctx, msg[len('%s: ' % ctx.irc.nick):]);

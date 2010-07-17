@@ -1,22 +1,21 @@
 #!/usr/bin/env python
 from irc import IrcClient
 import logging
+import logging.config
 import json
 import modules
 import sys
 import getopt
+import os.path
+
+from config import Config
+
 
 version = "0.1a"
 
 class SchongoClient(IrcClient):
-	def __init__(self):
-		IrcClient.__init__(self,
-			server="irc.darkdna.net",
-			port=6667,
-			nicks=["Schongo", "Schongo1"],
-			ident="schongo",
-			realname="Schongo"
-		)
+	def __init__(self, *a, **kw):
+		IrcClient.__init__(self, *a, **kw)
 	
 	def onConnected(self):
 		IrcClient.onConnected(self)
@@ -44,19 +43,69 @@ def main(argv):
 	print(opts)
 
 	debug = False
+	configFile = None
 
 	for arg,val in opts:
-		if arg == "--debug" or arg == "v":
+		if arg == "--debug" or arg == "-v":
 			debug = True
-	logging.basicConfig(level=(debug and logging.DEBUG or logging.WARN))
+		elif arg == "--config" or arg == "-c":
+			configFile = val
+
+	if configFile is None:
+		configFile = debug and "config-debug.cfg" or "config.cfg"
+
+	if not os.path.isfile(configFile):
+		if os.path.isfile("config.cfg"):
+			logging.warn("Config file %s missing, reverting to default" % configFile)
+			configFile = "config.cfg"
+		else:
+			logging.error("We are missing a config file, please look at the example.cfg for help on making a new config, and name it config.cfg, or pass a config file using --config")
+			return
+	
+
+	#logging.basicConfig(level=(debug and logging.DEBUG or logging.WARN))
+	logging.config.fileConfig("logging.cfg")
+
+
+
+	config = Config();
+
+	logging.info("Reading config file: %s" % configFile)
+	try:
+		config.read(configFile)
+	except Exception,e:
+		logging.error("Error reading config file: %s" % e)
+		return
+
 	if debug:
 		logging.info("Debug mode activated")
 
-	conn = SchongoClient();
-	conn.connect()
+	basic = config.get_section("Basic")
 
-	conn.start()
-	return conn
+	modules.cfg_basic = basic
+	modules.config = config
+
+	modules.init()
+
+	schongos = {}
+
+	for i in basic.getlist("networks"):
+		net = config.get_section("Network/%s" % i)
+		sch = SchongoClient(
+			server=net.get("server"),
+			port=net.getint("port"),
+			nicks=net.getlist("nicks"),
+			ident=net.get("ident"),
+			realname=net.get("real name")
+		)
+		sch.connect()
+		sch.start()
+		schongos[net] = sch
 	
+	modules.connections = schongos
+
+	return schongos
+
+
 if __name__ == "__main__":
 	main(sys.argv[1:])
