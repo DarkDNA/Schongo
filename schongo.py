@@ -14,24 +14,37 @@ from config import Config
 version = "0.1a"
 
 class SchongoClient(IrcClient):
-	def __init__(self, *a, **kw):
-		IrcClient.__init__(self, *a, **kw)
-	
+	def __init__(self, server, port=6667, nicks=None, ident=None, realname=None, network=None):
+		IrcClient.__init__(self, server, port, nicks, ident, realname)
+
+		if network is not None:
+			self.logger = logging.getLogger("IrcSocket(%s)" % network)
+
+	# Overrides Thread
+	def getName(self):
+		return "IrcSocket(%s)" % network
+
+
+	# Overrides IrcClient, and calls super	
 	def onConnected(self):
 		IrcClient.onConnected(self)
 		modules.fire_hook("connected", self)
 		self.join_channel("#lobby")
 	
+	# Overrides IrcClient, and calls super
 	def onDisconnected(self):
 		modules.fire_hook("disconnected", self)
 		IrcClient.onDisconnected(self)
 	
+	# Overrides IrcClient
 	def onMsg(self, chan, who, what):
 		modules.fire_hook("message", modules.IrcContext(self, chan, who), what)
 	
+	# Overrides IrcClient
 	def onAction(self, chan, who, what):
 		modules.fire_hook("action", modules.IrcContext(self, chan, who), what)
 	
+	# Overrides IrcClient
 	def onCtcp(self, chan, who, cmd, arg):
 		if cmd == "VERSION":
 			self.notice(who.nick, "\x01VERSION Schongo Bot %s\x01" % version)
@@ -96,7 +109,8 @@ def main(argv):
 			port=net.getint("port"),
 			nicks=net.getlist("nicks"),
 			ident=net.get("ident"),
-			realname=net.get("real name")
+			realname=net.get("real name"),
+			network=net
 		)
 		sch.connect()
 		sch.start()

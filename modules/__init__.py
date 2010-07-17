@@ -34,7 +34,7 @@ class IrcContext:
 	def ctcp_reply(self, cmd, arg):
 		self.notice("\x01%s %s\x01" % (cmd, arg))
 
-# Commands
+# Methods
 		
 def fire_hook(hook, *args, **kw):
 	if hook in hooks:
@@ -44,12 +44,9 @@ def fire_hook(hook, *args, **kw):
 			except Exception, e:
 				logger.warn("Hook {hook} crashed for module {module}: {exc}".format(hook=hook, module=m, exc=e))
 	
-
-# Methods
-
 def init():
 	for i in cfg_basic.getlist("autoload modules"):
-		load_module(i);
+		load_module(i)
 
 def load_module(mod):
 	if mod in mods:
