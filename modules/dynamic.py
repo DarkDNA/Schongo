@@ -6,10 +6,13 @@ __info__ = {
 	"Dependencies": []
 }
 
-
 cmds = {}
 
 def onLoad():
+	addCommands()
+	addHooks()
+
+def addCommands():
 	@command("add")
 	def add_command(ctx, cmd, arg):
 		dcmd, val = arg.split(' ', 1)
@@ -21,6 +24,7 @@ def onLoad():
 		del cmds[dcmd]
 		ctx.reply("Deleted command %s" % dcmd)
 
+def addHooks():
 	@hook("command")
 	def command_hook(ctx, cmd, arg, args):
 		if cmd in cmds:
