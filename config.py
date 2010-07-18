@@ -27,6 +27,13 @@ class ConfigSection:
 	def set(self, opt, val):
 		self.cfg.set(self.section, opt, val)
 
+	def clear(self, opt=None):
+		if opt is None:
+			self.cfg.remove_section(self.section)
+			self.cfg.add_section(self.section)
+		else:
+			self.cfg.remove_option(self.section, opt)
+
 	def items(self):
 		return self.cfg.items(self.section)
 		

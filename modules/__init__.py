@@ -1,11 +1,15 @@
 import sys
 import logging
+import textwrap
 
 commands = {}
 hooks = {}
+filters = {}
 mods = {}
+
 cfg_basic = None
 config = None
+
 connections = {}
 
 logger = logging.getLogger("Modules")
@@ -21,12 +25,26 @@ class IrcContext:
 		self.chan = c
 		self.who = w
 	
-	def reply(self, msg):
+	def reply(self, msg, prefix=None, parse=True):
+		if prefix is not None:
+			msg = "\x02[ %s ]\x02 %s" % (prefix, msg)
+
 		if self.chan == self.irc.nick:
 			# Private Message
-			self.irc.say(self.who.nick, msg)
+			self.say(self.who.nick, msg, parse)
 		else:
-			self.irc.say(self.chan, msg)
+			self.say(self.chan, msg, parse)
+
+	def error(self, msg):
+		self.reply(msg, "Error")
+
+
+	def say(self, chan, msg, parse=True):
+		if parse:
+			if msg.startswith("/me "):
+				msg = "\x01ACTION %s\x01" % msg[4:]
+
+		self.irc.say(chan, msg)
 		
 	def notice(self, msg):
 		self.irc.notice(self.who.nick, msg)
@@ -37,29 +55,33 @@ class IrcContext:
 # Methods
 		
 def fire_hook(hook, *args, **kw):
+	"""Hooks are fire-and-forget lists for events happening in the bot."""
 	if hook in hooks:
 		for m in hooks[hook]:
 			try:
 				hooks[hook][m](*args, **kw)
 			except Exception, e:
-				logger.warn("Hook {hook} crashed for module {module}: {exc}".format(hook=hook, module=m, exc=e))
-	
+				logger.warn("Hook %s crashed when running module %s: %s", hook, m, e)
+
+
 def init():
 	for i in cfg_basic.getlist("autoload modules"):
 		load_module(i)
 
 def load_module(mod):
 	if mod in mods:
-		#print("@@@ Module `%s' already loaded" % mod)
-		logger.warn("Module {mod} already loaded, unloading.".format(mod=mod));
+		logger.warn("Module %s already loaded, unloading.", mod);
 		unload_module(mod)
 	
 	# Begin ze actual loadink!
 	
 	theMod = __import__(mod, globals(), locals(), [], -1)
+
 	theMod.command = lambda *a, **kw : command_mod(mod, *a, **kw)
 	theMod.hook = lambda h : hook_mod(mod, h)
-	theMod.logger = logging.getLogger("module.%s" % mod)
+
+	theMod.logger = logging.getLogger("Module %s" % mod)
+	theMod.config = config.get_section("Module/%s" % mod, True)
 	
 	# Used to give more decorators for other advanced functionality. :)
 	#   Say, @variable
@@ -123,6 +145,7 @@ def hook_mod(mod, hook):
 		return f
 	return retHook	
 
+
 command = lambda *a, **kw : command_mod("__init__", *a, **kw)
 hook = lambda h : hook_mod("__init__", h)
 	
@@ -136,10 +159,10 @@ def load_cmd(ctx, cmd, arg, what, *args):
 			try:
 				load_module(mod)
 			except Exception, e:
-				ctx.reply("[Load Module] Error loading %s: %s" % (mod,e))
-		ctx.reply("[Load Module] Done.")
+				ctx.reply("Error loading %s: %s" % (mod,e), "Load")
+		ctx.reply("Done.", "Load")
 	else:
-		ctx.reply("[Error] Unknown 'load' sub-command: %s" % what);
+		ctx.error("Unknown 'load' sub-command: %s" % what);
 
 @command("unload", 2)
 def unload_cmd(ctx, cmd, arg, what, *args):
@@ -149,10 +172,10 @@ def unload_cmd(ctx, cmd, arg, what, *args):
 			try:
 				unload_module(mod)
 			except Exception, e:
-				ctx.reply("[Unload Module] Error unloading %s: %s" % (mod,e))
-		ctx.reply("[Unload Module] Done.")
+				ctx.reply("Error unloading %s: %s" % (mod,e), "Unload")
+		ctx.reply("Done.", "Unload")
 	else:
-		ctx.reply("[Error] Unknown 'unload' sub-command: %s" % what);
+		ctx.error("Unknown 'unload' sub-command: %s" % what);
 
 @command("info", 2, 2)
 def info_cmd(ctx, cmd, arg, what, *args):
@@ -161,16 +184,16 @@ def info_cmd(ctx, cmd, arg, what, *args):
 		ctx.reply("Information available for module %s:" % args[0])
 		try:
 			mod = mods[args[0]]
-			doc = dbgmod.__doc__.split("\n", 1)[0];
+			doc = (dbgmod.__doc__ or "").split("\n", 1)[0];
 			if doc == "":
 				doc = "*** This module doesn't provide a doc string, yell at the author."
-			ctx.reply("[%s] %s" % (args[0], doc))
+			ctx.reply("%s" % doc, mod, False)
 			try:
 				info = mod.__info__
-				ctx.reply("[%s] Author: %s" % (args[0], info['Author']))
-				ctx.reply("[%s] Version: %s" % (args[0], info['Version']))
+				ctx.reply("Author: %s" % info['Author'], mod, False)
+				ctx.reply("Version: %s" % info['Version'], mod, False)
 			except AttributeError:
-				ctx.reply("[%s] Additional information not available" % args[0])
+				ctx.reply("Additional information not available")
 		except KeyError:
 			ctx.reply("[[ Information not available as module is not loaded. ]]")
 	elif what == "command" or what == "cmd":
@@ -178,7 +201,7 @@ def info_cmd(ctx, cmd, arg, what, *args):
 		if c in commands:
 			#ctx.reply("Info for command %s" % c)
 			#ctx.reply("[%s] %d min args" % (c, c._args))
-			s = "[Info] Information for command %s" % c
+			s = "Command %s" % c
 			minarg = commands[c]._min
 			maxarg = commands[c]._max
 			if minarg != -1 and maxarg == -1:
@@ -196,17 +219,28 @@ def info_cmd(ctx, cmd, arg, what, *args):
 			else:
 				s += ": "
 
-			usage = (commands[c].__doc__ or "").split("\n", 1)[0];
+
+			parts = (commands[c].__doc__ or "").split("\n", 1)
+			usage = parts[0]
+
+			if len(parts) > 1:
+				body = parts[1]
+			else:
+				body = ""
+
 			if usage != "":
 				s += usage
 			else:
 				s += "[[ No usage info given. ]]"
 
-			ctx.reply(s)
+			ctx.reply(s, "Info")
+
+			if body != "":
+				ctx.reply(body, "Info")
 		else:
 			ctx.reply("I don't seem to have any data available for that command.")
 	else:
-		ctx.reply("[Error] Unknown info element: %s" % what)
+		ctx.error("Unknown info element: %s" % what)
 
 @command("shutdown")
 def shutdown_cmd(ctx, cmd, arg):
@@ -230,7 +264,7 @@ def handle_command(ctx, line):
 			# Dumb command
 			cmdf(ctx, cmd, arg);
 		elif len(args) < cmdf._min:
-			ctx.reply("[Error] The command %s takes atleast %d arguments, %d given." % (cmd, cmdf._min, len(args)))
+			ctx.error("The command %s takes atleast %d arguments, %d given." % (cmd, cmdf._min, len(args)))
 		else:
 			commands[cmd](ctx, cmd, arg, *args)
 	else:

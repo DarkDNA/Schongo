@@ -19,10 +19,13 @@ class SchongoClient(IrcClient):
 
 		if network is not None:
 			self.logger = logging.getLogger("IrcSocket(%s)" % network)
+			self.network = network
+		else:
+			self.network = server
 
 	# Overrides Thread
 	def getName(self):
-		return "IrcSocket(%s)" % network
+		return "IrcSocket(%s)" % self.network
 
 
 	# Overrides IrcClient, and calls super	
@@ -76,8 +79,8 @@ def main(argv):
 			return
 	
 
-	#logging.basicConfig(level=(debug and logging.DEBUG or logging.WARN))
-	logging.config.fileConfig("logging.cfg")
+	logging.basicConfig(level=(debug and logging.DEBUG or logging.WARN))
+	#logging.config.fileConfig("logging.cfg")
 
 
 
