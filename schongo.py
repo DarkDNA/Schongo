@@ -68,14 +68,16 @@ def main(argv):
 			configFile = val
 
 	if configFile is None:
-		configFile = debug and "config-debug.cfg" or "config.cfg"
+		configFile = debug and "data/config-debug.cfg" or "data/config.cfg"
 
 	if not os.path.isfile(configFile):
-		if os.path.isfile("config.cfg"):
+		if os.path.isfile("data/config.cfg"):
 			logging.warn("Config file %s missing, reverting to default" % configFile)
-			configFile = "config.cfg"
+			configFile = "data/config.cfg"
 		else:
-			logging.error("We are missing a config file, please look at the example.cfg for help on making a new config, and name it config.cfg, or pass a config file using --config")
+			logging.error("""We are missing a config file, please look at the example.cfg for help on making a new config, and name it config.cfg or pass a config file using --config
+
+The config file should go in the data directory""")
 			return
 	
 

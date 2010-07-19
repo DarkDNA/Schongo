@@ -246,15 +246,16 @@ def info_cmd(ctx, cmd, arg, what, *args):
 	if what == "module" or what == "mod":
 		ctx.reply("Information available for module %s:" % args[0])
 		try:
-			mod = mods[args[0]]
-			doc = (dbgmod.__doc__ or "").split("\n", 1)[0];
+			m = args[0]
+			mod = mods[m]
+			doc = (mod.__doc__ or "").split("\n", 1)[0];
 			if doc == "":
 				doc = "*** This module doesn't provide a doc string, yell at the author."
-			ctx.reply("%s" % doc, mod, False)
+			ctx.reply("%s" % doc, m, False)
 			try:
 				info = mod.__info__
-				ctx.reply("Author: %s" % info['Author'], mod, False)
-				ctx.reply("Version: %s" % info['Version'], mod, False)
+				ctx.reply("Author: %s" % info['Author'], m, False)
+				ctx.reply("Version: %s" % info['Version'], m, False)
 			except AttributeError:
 				ctx.reply("Additional information not available")
 		except KeyError:
