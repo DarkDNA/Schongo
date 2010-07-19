@@ -74,19 +74,17 @@ def fire_hook(hook, *args, **kw):
 def init():
 	load_persist()
 
-
 	for i in cfg_basic.getlist("autoload modules"):
 		load_module(i)
 
 
 
 def shutdown():
-
-	#for i in mods:
-	#	unload_module(i)
 	unloadables = mods.keys()
 	for i in unloadables:
 		unload_module(i)
+
+	save_persist()
 
 # Persistance
 
@@ -266,8 +264,11 @@ def info_cmd(ctx, cmd, arg, what, *args):
 			#ctx.reply("Info for command %s" % c)
 			#ctx.reply("[%s] %d min args" % (c, c._args))
 			s = "Command %s" % c
-			minarg = commands[c]._min
-			maxarg = commands[c]._max
+			theCmd = commands[c]
+
+			minarg = theCmd._min
+			maxarg = theCmd._max
+
 			if minarg != -1 and maxarg == -1:
 					s += "(>%d)" % (minarg - 1)
 			elif minarg == -1 and maxarg == -1:
@@ -278,13 +279,14 @@ def info_cmd(ctx, cmd, arg, what, *args):
 				s += "(%d to %d)" % (minarg, maxarg)
 			else:
 				s += ": ** This should never happen **"
-			if commands[c]._mod != "__init__":
-				s += " from module %s: " % commands[c]._mod
+
+			if theCmd._mod != "__init__":
+				s += " from module %s: " % theCmd._mod
 			else:
 				s += ": "
 
 
-			parts = (commands[c].__doc__ or "").split("\n", 1)
+			parts = (theCmd.__doc__ or "").split("\n", 1)
 			usage = parts[0]
 
 			if len(parts) > 1:
