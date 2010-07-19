@@ -8,6 +8,8 @@ __info__ = {
 
 cmds = {}
 
+__persist__ = [ "cmds" ]
+
 def onLoad():
 	addCommands()
 	addHooks()

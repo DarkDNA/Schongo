@@ -1,6 +1,9 @@
+from __future__ import with_statement
 import sys
 import logging
 import textwrap
+import pickle
+
 
 commands = {}
 hooks = {}
@@ -10,9 +13,13 @@ mods = {}
 cfg_basic = None
 config = None
 
+global persist
+
 connections = {}
+persist = {}
 
 logger = logging.getLogger("Modules")
+logger.setLevel(logging.INFO)
 
 class IrcContext:
 	""" Holds three important context things, and provides some helper methods for quickly replying."""
@@ -65,8 +72,45 @@ def fire_hook(hook, *args, **kw):
 
 
 def init():
+	load_persist()
+
+
 	for i in cfg_basic.getlist("autoload modules"):
 		load_module(i)
+
+
+
+def shutdown():
+
+	#for i in mods:
+	#	unload_module(i)
+	unloadables = mods.keys()
+	for i in unloadables:
+		unload_module(i)
+
+# Persistance
+
+def load_persist():
+	global persist
+	try:
+		f = file("data/mod_persist.pickle", "rb")
+		persist = pickle.load(f)
+		f.close()
+		logger.info("Persist loaded: %s", persist)
+	except:
+		logger.warn("Failed to load persist data")
+		pass
+
+def save_persist():
+	global persist
+	logger.info("Saving persist: %s", persist)
+	f = file("data/mod_persist.pickle", "wb")
+	pickle.dump(persist, f)
+	f.flush()
+	f.close()
+	logger.info("Done.")
+
+# Modules
 
 def load_module(mod):
 	if mod in mods:
@@ -81,17 +125,22 @@ def load_module(mod):
 	theMod.hook = lambda h : hook_mod(mod, h)
 
 	theMod.logger = logging.getLogger("Module %s" % mod)
-	theMod.config = config.get_section("Module/%s" % mod, True)
-	
+	theMod.cfg = config.get_section("Module/%s" % mod, True)
+
+	if hasattr(theMod, "__persist__"):
+		global persist
+		if mod in persist:
+			for i in theMod.__persist__:
+				if i in persist[mod]:
+					setattr(theMod, i, persist[mod][i]) # This could certanly be cleaner.
+
 	# Used to give more decorators for other advanced functionality. :)
 	#   Say, @variable
 	fire_hook("module_preload", mod, theMod)
 	
-	try:
+	if hasattr(theMod, "onLoad"):
 		theMod.onLoad()
-	except AttributeError:
-		pass
-	
+		
 	mods[mod] = theMod
 	fire_hook("module_load", mod, theMod);
 	
@@ -109,7 +158,6 @@ def unload_module(mod):
 	
 	for cmd in commands:
 		if commands[cmd]._mod == mod:
-			#del commands[cmd];
 			toDel.append(cmd)
 	
 	for cmd in toDel:
@@ -117,9 +165,21 @@ def unload_module(mod):
 	
 	fire_hook("module_unload", mod)
 	
+	theMod = mods[mod]
+
+	if hasattr(theMod, "onUnload"):
+		theMod.onUnload()
+
+
 	try:
-		mods[mod].onUnload()
-	except AttributeError:
+		if hasattr(theMod, "__persist__"):
+			global persist
+			persist[mod] = {}
+			for i in theMod.__persist__:
+				persist[mod][i] = getattr(theMod, i)
+
+	except AttributeError, e:
+		logger.warn("Error persisting data for module %s: %s", mod, e)
 		pass
 	
 	del mods[mod]
@@ -153,7 +213,8 @@ hook = lambda h : hook_mod("__init__", h)
 	
 @command("load", 2)
 def load_cmd(ctx, cmd, arg, what, *args):
-	"""load module <mod1> [mod2]..."""
+	"""load module <mod1> [mod2]...
+	Loads the given modules"""
 	if what == "module" or what == "mod":
 		for mod in args:
 			try:
@@ -166,7 +227,8 @@ def load_cmd(ctx, cmd, arg, what, *args):
 
 @command("unload", 2)
 def unload_cmd(ctx, cmd, arg, what, *args):
-	"""unload module <mod1> [mod2]..."""
+	"""unload module <mod1> [mod2]...
+	unloads the given modules additional commands may be added to this later, but for now module is the only one"""
 	if what == "module" or what == "mod":
 		for mod in args:
 			try:
@@ -179,7 +241,8 @@ def unload_cmd(ctx, cmd, arg, what, *args):
 
 @command("info", 2, 2)
 def info_cmd(ctx, cmd, arg, what, *args):
-	"""info <module|command> <data>"""
+	"""info <module|command> <data>
+	Retrieves additional information about the module or command, in a human-readable manner"""
 	if what == "module" or what == "mod":
 		ctx.reply("Information available for module %s:" % args[0])
 		try:
@@ -244,7 +307,14 @@ def info_cmd(ctx, cmd, arg, what, *args):
 
 @command("shutdown")
 def shutdown_cmd(ctx, cmd, arg):
-	ctx.irc.disconnect(arg)
+	"""Shuts down the bot with the given message"""
+	shutdown()
+	#ctx.irc.disconnect(arg)
+	if arg == "":
+		arg = "Shutdown ordered by %s" % ctx.who.nick
+
+	for net in connections:
+		connections[net].disconnect(arg)
 	
 
 
