@@ -333,13 +333,16 @@ def handle_command(ctx, line):
 	if cmd in commands:
 		cmdf = commands[cmd];
 		# TODO: Implement Max args
-		if cmdf._min == -1:
-			# Dumb command
-			cmdf(ctx, cmd, arg);
-		elif len(args) < cmdf._min:
-			ctx.error("The command %s takes atleast %d arguments, %d given." % (cmd, cmdf._min, len(args)))
-		else:
-			commands[cmd](ctx, cmd, arg, *args)
+		try:
+			if cmdf._min == -1:
+				# Dumb command
+				cmdf(ctx, cmd, arg);
+			elif len(args) < cmdf._min:
+				ctx.error("The command %s takes atleast %d arguments, %d given." % (cmd, cmdf._min, len(args)))
+			else:
+				cmdf(ctx, cmd, arg, *args)
+		except Exception, e:
+			logger.warn("Error running command %s: %s", cmd, e)
 	else:
 		fire_hook("command", ctx, cmd, arg, args)
 	
