@@ -3,7 +3,7 @@ import sys
 import logging
 import textwrap
 import pickle
-
+import copy
 
 commands = {}
 hooks = {}
@@ -64,7 +64,8 @@ class IrcContext:
 def fire_hook(hook, *args, **kw):
 	"""Hooks are fire-and-forget lists for events happening in the bot."""
 	if hook in hooks:
-		for m in hooks[hook]:
+		mods = copy.copy(hooks[hook])
+		for m in mods:
 			try:
 				hooks[hook][m](*args, **kw)
 			except Exception, e:
