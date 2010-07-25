@@ -40,7 +40,15 @@ def onLoad():
 		url = "http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=5&v=2" % urllib.quote(arg)
 		r = urllib2.urlopen(url)
 		r = dom.parse(r)
-	
+			
+		results = int(r.getElementsByTagName("openSearch:totalResults")[0].firstChild.data)
+
+		if results > 0:
+			res = min(results, 5)
+			ctx.reply("Results 1-%d out of %d" % (res, results), "YouTube")
+		else:
+			ctx.reply("No results found for %s" % arg, "YouTube")
+
 		for i in r.getElementsByTagName("entry"):
 			vid = i.getElementsByTagName("id")[0].firstChild.data
 			vid = vid.split(":")[-1]
