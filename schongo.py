@@ -41,7 +41,7 @@ class SchongoClient(IrcClient):
 		IrcClient.onConnected(self)
 		modules.fire_hook("connected", self)
 		for i in self.channels:
-			self.join_channel(i)
+			self.join_channel(i)	
 
 	# Overrides IrcClient, and calls super
 	def onDisconnected(self):
@@ -124,7 +124,8 @@ The config file should go in the data directory""")
 			nicks=net.getlist("nicks"),
 			ident=net.get("ident"),
 			realname=net.get("real name"),
-			network=net.getlist("channels")
+			network=i,
+			channels=net.getlist("channels")
 		)
 		sch.connect()
 		sch.start()
