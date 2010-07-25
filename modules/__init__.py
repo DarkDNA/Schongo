@@ -195,7 +195,6 @@ def unload_module(mod):
 	del sys.modules['modules.%s' % mod]
 
 # Decorators
-global command, hook;
 
 def command_mod(mod, name, min=-1, max=-1):
 	def retCmd(f):

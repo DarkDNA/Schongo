@@ -49,7 +49,6 @@ def onLoad():
 
 	@hook("message")
 	def message_hook(ctx, message):
-		m = ytRegEx.search(message)
-		if m is not None:
+		for m in ytRegEx.finditer(message):
 			YoutubeMeta(ctx, m.group(2))
 		
