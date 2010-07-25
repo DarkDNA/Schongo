@@ -63,7 +63,14 @@ class IrcSocket(Thread):
 	def disconnect(self, reason=None):
 		self._socket.close()
 		pass
-		
+    
+	def msgFormat(self, msg):
+		fmtchars = {
+        '`B':u'\u0002',
+        '`U':u'\u0001',
+        '`R':u'\u0016'}
+        off = '\u000F'
+    
 	def sendMessage(self, *msg, **kwargs):
 
 		if not self.connected:
@@ -81,6 +88,10 @@ class IrcSocket(Thread):
 		
 		line += "\r\n"
 		
+		try:
+		  line = line.encode('utf-8')
+        except UnicodeEncodeError, error:
+            logger.warn('Could not encode UTF-8 string sent to socket: %s' % error)
 		self._socket.send(line)
 	
 	def run(self):
@@ -100,6 +111,10 @@ class IrcSocket(Thread):
 			buffer = data.pop()
 			for line in data:
 				line = line.strip()
+				try:
+				    line = line.decode('utf-8')
+				except UnicodeDecodeError, error:
+				    logger.warn('Could not decode UTF-8 string sent by socket: %s' % error)
 				#print("=>" + line);
 				self.logger.debug("=> %s" % line)
 				self.onLine(line)

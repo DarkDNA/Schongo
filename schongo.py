@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# encoding=utf-8
 from irc import IrcClient
 import logging
 import logging.config
@@ -32,7 +33,7 @@ class SchongoClient(IrcClient):
 	def onConnected(self):
 		IrcClient.onConnected(self)
 		modules.fire_hook("connected", self)
-		self.join_channel("#lobby")
+		self.join_channel("#DavyDev")
 	
 	# Overrides IrcClient, and calls super
 	def onDisconnected(self):
