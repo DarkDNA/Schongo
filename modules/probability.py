@@ -22,15 +22,16 @@ __info__ = {
 def onLoad():
     @command("probability", 1)
     def probability_cmd(ctx, cmd, arg, *args):
-        if len(arg.split(' ')) != 0:
-            if len(arg.split(' ')) == 1:
-                arg0 = arg.split(' ')[0]
-                if len(arg0) <= 7:
-                    probability = lentoperm[len(arg0)]
+        args = arg.split(' ')
+        if args != 0:
+            if args == 1:
+                args[0] = arg.split(' ')[0]
+                if len(args[0]) <= 7:
+                    probability = lentoperm[len(args[0])]
                     probability = str(locale.currency(probability, grouping=True))
-                    ctx.reply(u'\u0002[probability]\u0002 The probability of "%s" compared to all other possible words of its length is\u0002 %s\u0002 to \u00021\u0002 against.' % (arg0, probability[1:len(probability)-3]))
+                    ctx.reply(u'The probability of "%s" compared to all other possible words of its length is\u0002 %s\u0002 to \u00021\u0002 against.' % (args[0], probability[1:len(probability)-3]), 'probability')
                 else:
-                    ctx.reply(u'\u0002[probability]\u0002 The probability of "%s" compared to all other possible words of its length is \u0002very unlikely\u0002 to \u00021\u0002 against.' % arg0)
+                    ctx.reply(u'The probability of "%s" compared to all other possible words of its length is \u0002very unlikely\u0002 to \u00021\u0002 against.' % args[0], 'probability')
             else:
                 probability = 0
                 veryunlikely = False
@@ -42,8 +43,8 @@ def onLoad():
                         veryunlikely = True
                 if veryunlikely == False:
                     probability = str(locale.currency(probability, grouping=True))
-                    ctx.reply(u'\u0002[probability]\u0002 The probability of this sentence, taking into account all the possible arrangements of all the possible words of all the given words\' lengths is\u0002 %s\u0002 to \u00021\u0002 against.' % probability[1:len(probability)-3])
+                    ctx.reply(u'The probability of this sentence, taking into account all the possible arrangements of all the possible words of all the given words\' lengths is\u0002 %s\u0002 to \u00021\u0002 against.' % probability[1:len(probability)-3], 'probability')
                 else:
-                    ctx.reply(u'\u0002[probability]\u0002 The probability of this sentence, taking into account all the possible arrangements of all the possible words of all the given words\' lengths is \u0002very unlikely\u0002 to \u00021\u0002 against.')
+                    ctx.reply(u'The probability of this sentence, taking into account all the possible arrangements of all the possible words of all the given words\' lengths is \u0002very unlikely\u0002 to \u00021\u0002 against.', 'probability')
         else:
-            ctx.reply(u'\u0002[probability]\u0002 The probability of nothing, compared to every character you could have typed, assuming "nothing" is a character is\u0002 %s\u0002 to \u00021\u0002 against. Please provide input next time.' % (len(numbers) + len(letters) + len(nothing)))
+            ctx.reply(u'The probability of nothing, compared to every character you could have typed, assuming "nothing" is a character is\u0002 %s\u0002 to \u00021\u0002 against. Please provide input next time.' % (len(numbers) + len(letters) + len(nothing)), 'probability')
