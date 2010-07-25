@@ -29,9 +29,9 @@ def onLoad():
                 if len(args[0]) <= 7:
                     probability = lentoperm[len(args[0])]
                     probability = str(locale.currency(probability, grouping=True))
-                    ctx.reply(u'The probability of "%s" compared to all other possible words of its length is\u0002 %s\u0002 to \u00021\u0002 against.' % (args[0], probability[1:len(probability)-3]), 'probability')
+                    ctx.reply(u'The probability of "%s" compared to all other possible words of its length is`B %s`B to `B1`B against.' % (args[0], probability[1:len(probability)-3]), 'probability')
                 else:
-                    ctx.reply(u'The probability of "%s" compared to all other possible words of its length is \u0002very unlikely\u0002 to \u00021\u0002 against.' % args[0], 'probability')
+                    ctx.reply(u'The probability of "%s" compared to all other possible words of its length is `Bvery unlikely`B to `B1`B against.' % args[0], 'probability')
             else:
                 probability = 0
                 veryunlikely = False
@@ -43,8 +43,8 @@ def onLoad():
                         veryunlikely = True
                 if veryunlikely == False:
                     probability = str(locale.currency(probability, grouping=True))
-                    ctx.reply(u'The probability of this sentence, taking into account all the possible arrangements of all the possible words of all the given words\' lengths is\u0002 %s\u0002 to \u00021\u0002 against.' % probability[1:len(probability)-3], 'probability')
+                    ctx.reply(u'The probability of this sentence, taking into account all the possible arrangements of all the possible words of all the given words\' lengths is`B %s`B to `B1`B against.' % probability[1:len(probability)-3], 'probability')
                 else:
-                    ctx.reply(u'The probability of this sentence, taking into account all the possible arrangements of all the possible words of all the given words\' lengths is \u0002very unlikely\u0002 to \u00021\u0002 against.', 'probability')
+                    ctx.reply(u'The probability of this sentence, taking into account all the possible arrangements of all the possible words of all the given words\' lengths is `Bvery unlikely`B to `B1`B against.', 'probability')
         else:
-            ctx.reply(u'The probability of nothing, compared to every character you could have typed, assuming "nothing" is a character is\u0002 %s\u0002 to \u00021\u0002 against. Please provide input next time.' % (len(numbers) + len(letters) + len(nothing)), 'probability')
+            ctx.reply(u'The probability of nothing, compared to every character you could have typed, assuming "nothing" is a character is`B %s`B to `B1`B against. Please provide input next time.' % (len(numbers) + len(letters) + len(nothing)), 'probability')

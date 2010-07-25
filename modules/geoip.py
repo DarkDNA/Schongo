@@ -19,7 +19,7 @@ def onLoad():
 		if '.' not in ip:
 			ctx.reply(u'geoip by Nick not currently supported.', 'geoip')
 			return
-			fornick = u'for \u0002%s\u0002' % ip
+			fornick = u'for `B%s`B' % ip
 			#host = m('chantrack').network(irc)[channel.lower()].users[ip.lower()].hostname
 			host = host.split('@')
 			ip = host[0]
@@ -69,4 +69,4 @@ def onLoad():
   </Location>
 </Locations>""", '')
 		lon = lon.replace('\n', '').replace('\\n', '')
-		ctx.reply(u"The IP Address \u0002%s\u0002 %s traces to \u0002%s\u0002, \u0002%s\u0002, \u0002%s\u0002(\u0002%s\u0002) \u0002%s\u0002 (\u0002%s\u0002, \u0002%s\u0002)." % (ip, fornick, city, state, country, cc, zip, lat, lon), 'geoip')
+		ctx.reply(u"The IP Address `B%s`B %s traces to `B%s`B, `B%s`B, `B%s`B(`B%s`B) `B%s`B (`B%s`B, `B%s`B)." % (ip, fornick, city, state, country, cc, zip, lat, lon), 'geoip')

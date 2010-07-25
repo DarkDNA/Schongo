@@ -99,16 +99,16 @@ def onLoad():
         lres = 'null'
         res = message
         lang = 'en'
-        ctx.reply(u"\u0002Let's Go!:\u0002 %s" % message, 'translationparty')
+        ctx.reply(u"`BLet's Go!:`B %s" % message, 'translationparty')
         while lengres != res:
             if lang == 'en':
                 data = load_url("http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=" + escapeurl(res.encode('utf-8')) + "&langpair=en%7Cja")
                 parsed = json.loads(data)
                 response = parsed['responseData']['translatedText']
                 if lengres == 'null':
-                    ctx.reply(u"\u0002Into Japanese:\u0002 %s" % response, 'translationparty')
+                    ctx.reply(u"`BInto Japanese:`B %s" % response, 'translationparty')
                 else:
-                    ctx.reply(u"\u0002Back into Japanese:\u0002 %s" % response, 'translationparty')
+                    ctx.reply(u"`BBack into Japanese:`B %s" % response, 'translationparty')
                 lengres = res
                 lres = res
                 res = response
@@ -117,12 +117,12 @@ def onLoad():
                 data = load_url("http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=" + escapeurl(res.encode('utf-8')) + "&langpair=ja%7Cen")
                 parsed = json.loads(data)
                 response = parsed['responseData']['translatedText']
-                ctx.reply(u"\u0002Back into english:\u0002 %s" % response, 'translationparty')
+                ctx.reply(u"`BBack into english:`B %s" % response, 'translationparty')
                 lres = res
                 res = response
                 
                 lang = 'en'
-        ctx.reply(u"\u0002Equilibrium found! %s\u0002" % successstring(lengres), 'translationparty')
+        ctx.reply(u"`BEquilibrium found! %s`B" % successstring(lengres), 'translationparty')
         
                 
 
