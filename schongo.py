@@ -15,14 +15,21 @@ from config import Config
 version = "0.1a"
 
 class SchongoClient(IrcClient):
-	def __init__(self, server, port=6667, nicks=None, ident=None, realname=None, network=None):
+	def __init__(self, server, port=6667, nicks=None, ident=None, realname=None, network=None, channels=None):
 		IrcClient.__init__(self, server, port, nicks, ident, realname)
 
+		if channels is None:
+			channels = ["#lobby"]
+
+		self.channels = channels
+
+
 		if network is not None:
-			self.logger = logging.getLogger("IrcSocket(%s)" % network)
 			self.network = network
 		else:
 			self.network = server
+		
+		self.logger = logging.getLogger("IrcSocket(%s)" % self.network)
 
 	# Overrides Thread
 	def getName(self):
@@ -33,8 +40,9 @@ class SchongoClient(IrcClient):
 	def onConnected(self):
 		IrcClient.onConnected(self)
 		modules.fire_hook("connected", self)
-		self.join_channel("#DavyDev")
-	
+		for i in self.channels:
+			self.join_channel(i)
+
 	# Overrides IrcClient, and calls super
 	def onDisconnected(self):
 		modules.fire_hook("disconnected", self)
@@ -116,7 +124,7 @@ The config file should go in the data directory""")
 			nicks=net.getlist("nicks"),
 			ident=net.get("ident"),
 			realname=net.get("real name"),
-			network=net
+			network=net.getlist("channels")
 		)
 		sch.connect()
 		sch.start()
