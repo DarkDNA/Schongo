@@ -358,8 +358,9 @@ def handle_command(ctx, line):
 	
 @hook("message")
 def command_processor(ctx, msg):
+	if msg == "":
+		return
 	if msg[0] == cfg_basic.get("prefix char"):
 		handle_command(ctx, msg[1:])
 	elif msg.startswith('%s: ' % ctx.irc.nick):
 		handle_command(ctx, msg[len('%s: ' % ctx.irc.nick):]);
-		

@@ -231,7 +231,7 @@ class IrcClient(IrcSocket):
 		elif msg.command == "PRIVMSG":
 			channel = msg.args[0]
 			message = msg.args[1]
-			if message[0] == "\x01" and message[-1] == "\x01":
+			if message.startswith("\x01") and message.endswith("\x01"):
 				body = message[1:-1];
 				parts = body.split(' ', 1)
 				cmd = parts[0]
