@@ -47,11 +47,19 @@ class IrcContext:
 	def error(self, msg):
 		self.reply(msg, "Error")
 
+	replacables = {
+		'`B': '\x02',
+		'`U': '\x1F',
+		'`O': '\x0F' }
+
 
 	def say(self, chan, msg, parse=True):
 		if parse:
 			if msg.startswith("/me "):
 				msg = "\x01ACTION %s\x01" % msg[4:]
+			for k in self.replacables:
+				msg = msg.replace(k, self.replacables[k])
+			
 
 		self.irc.say(chan, msg)
 		
