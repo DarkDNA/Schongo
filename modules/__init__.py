@@ -34,15 +34,21 @@ class IrcContext:
 		self.chan = c
 		self.who = w
 	
-def reply(self, msg, prefix=None, parse=True):
+	def reply(self, msg, prefix=None, parse=True, splitnl=True, splitnliteral=False):
 		if prefix is not None:
 			msg = "\x02[ %s ]\x02 %s" % (prefix, msg)
-		
 		if '\n' in msg or '\\n' in msg:
-			msg = msg.split('\n')
 			lines = []
-			for line in msg:
-				lines.extend(line.split('\\n'))
+			if splitnliteral:
+				lines = msg.split('\\n')
+			if splitnl:
+				if splitnliteral:
+					temp = lines
+					lines = []
+					for line in temp:
+						lines.extend(line.split('\n'))
+				else:
+					lines = msg.split('\n')
 			for line in lines:
 				if self.chan == self.irc.nick:
 					# Private Message
