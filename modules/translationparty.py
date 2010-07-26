@@ -3,7 +3,6 @@ Adds the 'translationparty' command, allowing users to connect to google transla
 """
 
 import json
-
 import urllib2
 import random
 
@@ -50,6 +49,9 @@ successstrings = {
 'meme': ["You're sure are up on your Internet jokes!",
             "That Internet joke is funny in any language!"],
 'tp': ["Translation Party was made by Will Carlough and Richard Boenigk. <br />Send us an email at <a href='mailto:translationparty@gmail.com'>translationparty@gmail.com</a>"],
+'darkdna': ["So, you like DarkDNA?",
+			"Don't forget to visit us at irc.darkdna.net/#lobby.",
+			"Schongo originated on DarkDNA, you know."],
 'multipurpose': ["This is a real translation party!",
 				    "You should move to Japan!",
 				    "You've done this before, haven't you.",
@@ -85,6 +87,9 @@ def successstring(eq):
         if t in eq:
             return successstrings['tp'][random.randint(0,len(successstrings['tp'])-1)]
     
+    if 'darkdna' in eq.lower():
+    	return successstrings['darkdna'][random.randint(0,len(successstrings['meme'])-1)]
+    
     return successstrings['multipurpose'][random.randint(0,len(successstrings['multipurpose'])-1)]
 
     
@@ -93,6 +98,7 @@ def successstring(eq):
 def onLoad():
     @command('translationparty', 1)
     def translationparty_cmd(ctx, cmd, arg, *args):
+        args = arg.split(' ')
         message = ' '.join(args)
         lengres = 'null'
         lres = 'null'
