@@ -227,9 +227,10 @@ def load_cmd(ctx, cmd, arg, what, *args):
 		for mod in args:
 			try:
 				load_module(mod)
+				ctx.reply("Done.", "Load")
 			except Exception, e:
 				ctx.reply("Error loading %s: %s" % (mod,e), "Load")
-		ctx.reply("Done.", "Load")
+		
 	else:
 		ctx.error("Unknown 'load' sub-command: %s" % what);
 
@@ -358,9 +359,8 @@ def handle_command(ctx, line):
 	
 @hook("message")
 def command_processor(ctx, msg):
-	if msg == "":
-		return
 	if msg[0] == cfg_basic.get("prefix char"):
 		handle_command(ctx, msg[1:])
 	elif msg.startswith('%s: ' % ctx.irc.nick):
 		handle_command(ctx, msg[len('%s: ' % ctx.irc.nick):]);
+		
