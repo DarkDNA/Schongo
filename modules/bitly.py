@@ -42,7 +42,7 @@ Condences <long-url> using the bit.ly url shortening service"""
 
 	@hook("message")
 	def message_hook(ctx, msg):
-		for m in re.finditer("http://(bit\\.ly|j.mp)/([a-zA-Z0-9]+)", msg):
+		for m in re.finditer("http://(bit\\.ly|j\\.mp)/([a-zA-Z0-9]+)", msg):
 			short = m.group(0)
 			long = getLongUrl(short)
 			if long:
