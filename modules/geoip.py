@@ -27,15 +27,15 @@ def onLoad():
 
 		xml = dom.parse(response)
 
-		ip = xml.getElementsByName("Ip")[0].firstChild.data
-		status = xml.getElementsByName("Status")[0].firstChild.data
-		cc = xml.getElementsByName("CountryCode")[0].firstChild.data
-		country = xml.getElementsByName("CountryName")[0].firstChild.data
-		region = xml.getElementsByName("RegionName")[0].firstChild.data
-		city = xml.getElementsByName("City")[0].firstChild.data
-		zip = xml.getElementsByName("ZipPostalCode")[0].firstChild.data
-		lat = xml.getElementsByName("Latitude")[0].firstChild.data
-		lon = xml.getElementsByName("Longitude")[0].firstChild.data
+		ip = xml.getElementsByTagName("Ip")[0].firstChild.data
+		status = xml.getElementsByTagName("Status")[0].firstChild.data
+		cc = xml.getElementsByTagName("CountryCode")[0].firstChild.data
+		country = xml.getElementsByTagName("CountryName")[0].firstChild.data
+		region = xml.getElementsByTagName("RegionName")[0].firstChild.data
+		city = xml.getElementsByTagName("City")[0].firstChild.data
+		zip = xml.getElementsByTagName("ZipPostalCode")[0].firstChild.data
+		lat = xml.getElementsByTagName("Latitude")[0].firstChild.data
+		lon = xml.getElementsByTagName("Longitude")[0].firstChild.data
 
 		xml.unlink() # Phew! Release all the xml tree data now, since we just spent the code pulling it into vars. :)
 
