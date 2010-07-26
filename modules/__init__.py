@@ -6,6 +6,8 @@ import logging
 import textwrap
 import pickle
 import copy
+import time
+import threading
 
 commands = {}
 hooks = {}
@@ -15,10 +17,12 @@ mods = {}
 cfg_basic = None
 config = None
 
-global persist
+global persist,timers
 
 connections = {}
 persist = {}
+
+timers = {}
 
 logger = logging.getLogger("Modules")
 logger.setLevel(logging.INFO)
@@ -89,6 +93,25 @@ class IrcContext:
 	def ctcp_reply(self, cmd, arg):
 		self.notice("\x01%s %s\x01" % (cmd, arg))
 
+
+class TimerThread(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self, name="Timer Thread")
+	
+	def run(self):
+		global timers
+		while True:
+			for mod in timers:
+				for timer in timers[mod]:
+					if timer._curtime == 0:
+						timer(*timer._args, **timer._kwargs)
+						if timer._repeats:
+							timer._curtime = timer._time
+						else:
+							timer._curtime = -1
+					elif timer._curtime > 0:
+						timer._curtime -= 1
+			time.sleep(1)
 # Methods
 		
 def fire_hook(hook, *args, **kw):
@@ -108,6 +131,8 @@ def init():
 	for i in cfg_basic.getlist("autoload modules"):
 		load_module(i)
 
+	timerThread = TimerThread()
+	timerThread.start()
 
 
 def shutdown():
@@ -152,6 +177,7 @@ def load_module(mod):
 
 	theMod.command = lambda *a, **kw : command_mod(mod, *a, **kw)
 	theMod.hook = lambda h : hook_mod(mod, h)
+	theMod.timer = lambda *a, **kw : timer_mod(mod, *a, **kw)
 
 	theMod.logger = logging.getLogger("Module %s" % mod)
 	theMod.cfg = config.get_section("Module/%s" % mod, True)
@@ -182,6 +208,9 @@ def unload_module(mod):
 	for hook in hooks:
 		if mod in hook:
 			del hook[mod]
+
+	global timers
+	del timers[mod]
 	
 	toDel = []
 	
@@ -214,6 +243,16 @@ def unload_module(mod):
 	del mods[mod]
 	del sys.modules['modules.%s' % mod]
 
+# Timers
+
+def timer_start(mod, timer, args, kwargs):
+	timer._args = args
+	timer._kwargs = kwargs
+	timer._curtime = timer._time
+
+def timer_cancel(mod, timer):
+	timer._curtime = -1
+
 # Decorators
 
 def command_mod(mod, name, min=-1, max=-1):
@@ -235,8 +274,24 @@ def hook_mod(mod, hook):
 			hooks[hook] = {}
 		hooks[hook][mod] = f
 		return f
-	return retHook	
+	return retHook
 
+def timer_mod(mod, time, repeats=False):
+	def retTimer(f):
+		global timers
+		if mod not in timers:
+			timers[mod] = []
+
+		timers[mod].append(f)
+
+		f._time = time
+		f._repeats = repeats
+		f._curtime = -1 
+
+		f.start = lambda *a, **kw : timer_start(mod, f, a, kw)
+		f.cancel = lambda : timer_cancel(mod, f)
+		return f
+	return retTimer
 
 command = lambda *a, **kw : command_mod("__init__", *a, **kw)
 hook = lambda h : hook_mod("__init__", h)
