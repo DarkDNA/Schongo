@@ -198,10 +198,14 @@ def unload_module(mod):
 
 def command_mod(mod, name, min=-1, max=-1):
 	def retCmd(f):
-		commands[name] = f
+		if(isinstance(name,list)):
+			for n in name:
+				commands[n] = f
+		else:
+			commands[name] = f
 		f._mod = mod
 		f._min = min
-		f._max = max
+		f._max = max		
 		return f
 	return retCmd
 
@@ -223,13 +227,21 @@ hook = lambda h : hook_mod("__init__", h)
 def load_cmd(ctx, cmd, arg, what, *args):
 	"""load module <mod1> [mod2]...
 	Loads the given modules"""
+	modulesLoaded = 0
 	if what == "module" or what == "mod":
 		for mod in args:
 			try:
 				load_module(mod)
 				ctx.reply("Done.", "Load")
+				modulesLoaded += 1
 			except Exception, e:
 				ctx.reply("Error loading %s: %s" % (mod,e), "Load")
+		if modulesLoaded > 0:
+			if modulesLoaded == 1:
+				ctx.reply("Loaded %s module" % modulesLoaded, "Load")
+			else:
+				ctx.reply("Loaded %s modules" % modulesLoaded, "Load")
+			
 	else:
 		ctx.error("Unknown 'load' sub-command: %s" % what);
 
@@ -238,12 +250,19 @@ def unload_cmd(ctx, cmd, arg, what, *args):
 	"""unload module <mod1> [mod2]...
 	unloads the given modules additional commands may be added to this later, but for now module is the only one"""
 	if what == "module" or what == "mod":
+		modulesUnloaded = 0
 		for mod in args:
 			try:
 				unload_module(mod)
 				ctx.reply("Done.", "Unload")
+				modulesUnloaded += 1
 			except Exception, e:
 				ctx.reply("Error unloading %s: %s" % (mod,e), "Unload")
+		if modulesUnloaded > 0:
+			if modulesUnloaded == 1:
+				ctx.reply("Unloaded %s module" % modulesUnloaded, "Unload")
+			else:
+				ctx.reply("Unloaded %s modules" % modulesUnloaded, "Unload")
 	else:
 		ctx.error("Unknown 'unload' sub-command: %s" % what);
 
