@@ -27,7 +27,7 @@ def getLongUrl(short):
 		return None
 
 def onLoad():
-	@command('bitly', 1, 2)
+	@command('bitly', 1, 1)
 	def bitly_cmd(ctx, cmd, arg, *args):
 		"""bitly <long-url>
 Condences <long-url> using the bit.ly url shortening service"""
