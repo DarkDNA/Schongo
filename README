@@ -1,12 +1,76 @@
 Schongo Modular Bot
 
-= What is Schongo
+= What is Schongo =
 	Schongo is a bot Written by:
-		* Ross Delinger
+		* Ross Delinger (Posiden)
 		* Wil Hall
 		* Selig Arkin
 	it is designed to be modular, but not too much. The idea is that the core functionality (command parsing, for example) is built into the bot,
 	to prevent a mess of plugins to provide core functionality. :)
 
-= What are the plans?
+= What are the plans? =
 	Check out the TODO File
+	
+= Setup =
+	To setup Schongo: copy data/example.cfg to data/config.cfg
+	Then edit config.cfg with the irc network details
+	
+	Then type this into terminal or cmdline:
+		python schongo.py
+		
+= The Basics =
+	- Commands -
+		-> Basic Commands:
+			The default config sets '@' as the prefix for commands so all commands in tis README use it
+			commands look like this:
+				@command arg1 arg2 arg3
+	
+		-> Dynamic Commands:
+			Dynamic commands are managed using the dynamic.py module
+			
+			Dynamic commands can use special syntax enhancements, such as %%Nick%% to refer to the person's nick, or %%Channel%% The syntax is as follows:
+			%%Variable%% - Replaced with the value of Variable
+			%[function name][function args]% - Dynamic function, such as random
+			
+			To Call a dynamic command use the same @command syntax as normal commands
+			To add a command make sure the dynamic module is loaded then call @add <command> <command result>
+	
+	- Modules -
+		-> Managing modules:
+			use @load mod <list of modules> to load modules
+			use @unload mod <list of modules> to unload modules
+			To reload a module use its @load command again
+			
+	
+	- Core commands -
+		-> @shutdown : shuts schongo down
+			
+		
+		
+		
+= Module Status =
+
+	- Modules by Posiden -
+		-> n2k.py
+			Interface for name2key for the MMORPG Second Life
+			works with alpha-fox name2key
+				commands: 
+						@name2key <Avatar Name>
+			
+		-> netcmds.py
+			Wraps around traceroute and ping. 
+				commands:
+						@ping <host>
+						@traceroute <host>
+
+	- Modules by Selig Arkin -
+	
+	
+	
+	- Modules by Will Hall -
+	
+	
+	
+
+				
+	

@@ -1,6 +1,6 @@
 """Provides Dynamic commands to Schongo
 
-Dynamic commands can use special syntax enhansements, such as %%Nick%% to refer to the person's nick, or %%Channel%% The syntax is as follows:
+Dynamic commands can use special syntax enhancements, such as %%Nick%% to refer to the person's nick, or %%Channel%% The syntax is as follows:
 
 %%Variable%% - Replaced with the value of Variable
 %[function name][function args]% - Dynamic function, such as random
