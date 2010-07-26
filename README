@@ -60,14 +60,24 @@ Schongo Modular Bot
 		-> netcmds.py
 			Wraps around traceroute and ping. 
 				commands:
-						@ping <host>
-						@traceroute <host>
+					@ping <host>
+					@traceroute <host>
 
 	- Modules by Selig Arkin -
+		-> youtube.py
+			Interfaces with youtube providing meta for linked videos
+				commands:
+					@youtube <search params>
 	
+		-> dynamic.py
+			Provides dynamic command functionality, explained above
+
 	
-	
-	- Modules by Will Hall -
+	- Modules by Wil Hall -
+		-> geoip.py
+		-> bitly.py
+		-> probability.py
+		
 	
 	
 	
