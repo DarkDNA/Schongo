@@ -241,9 +241,9 @@ def unload_cmd(ctx, cmd, arg, what, *args):
 		for mod in args:
 			try:
 				unload_module(mod)
+				ctx.reply("Done.", "Unload")
 			except Exception, e:
 				ctx.reply("Error unloading %s: %s" % (mod,e), "Unload")
-		ctx.reply("Done.", "Unload")
 	else:
 		ctx.error("Unknown 'unload' sub-command: %s" % what);
 
