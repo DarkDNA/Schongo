@@ -13,7 +13,6 @@ __info__ = {
 def onLoad():
 	@command('geoip', 1)
 	def geoip_cmd(ctx, cmd, arg, *args):
-		args = arg.split(' ')
 		ip = args[0]
 		fornick = ''
 		if '.' not in ip:

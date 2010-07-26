@@ -22,7 +22,6 @@ __info__ = {
 def onLoad():
     @command("probability", 1)
     def probability_cmd(ctx, cmd, arg, *args):
-        args = arg.split(' ')
         if args != 0:
             if args == 1:
                 args[0] = arg.split(' ')[0]

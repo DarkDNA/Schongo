@@ -93,7 +93,6 @@ def successstring(eq):
 def onLoad():
     @command('translationparty', 1)
     def translationparty_cmd(ctx, cmd, arg, *args):
-        args = arg.split(' ')
         message = ' '.join(args)
         lengres = 'null'
         lres = 'null'
