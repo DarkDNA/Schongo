@@ -1,5 +1,5 @@
 """
-Named for tachikoma the bot in irc.quickfox.net/#subnova created by _3of9
+Named for Tachikoma the bot in irc.quickfox.net/#subnova created by _3of9
 It spams random blurbs and twitter posts all the time
 Its purpose here is to spit out rss feed updates
 """
@@ -30,7 +30,7 @@ def onLoad():
 					ctx.reply("New post: %s" % link, feedName[feed])
 					lastTitles[feed] = title
 	
-	@command("feed",2,3)
+	@command("feed",1,3)
 	def addRss(ctx, cmd, arg, *args):
 		if args[0] == "add":
 			#add a feed to the module
