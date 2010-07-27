@@ -51,11 +51,14 @@ Schongo Modular Bot
 = Module Status =
 
 	- Modules by Posiden -
-		-> n2k.py
-			Interface for name2key for the MMORPG Second Life
-			works with alpha-fox name2key
+		-> secondlife.py
+			Interface for various Second Life APIs
+			works with alpha-fox name2key, and Second life live data feeds
 				commands: 
 						@name2key <Avatar Name>
+						@slStatus
+						@slUsers
+						@online
 			
 		-> netcmds.py
 			Wraps around traceroute and ping. 

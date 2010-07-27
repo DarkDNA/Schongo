@@ -1,6 +1,4 @@
-"""
-Adds the 'translationparty' command, allowing users to connect to google translator to translate a phrase back and forth from English to Japanese, using translationparty.com's phrases after an equilibrium is found.
-"""
+"""Adds the 'translationparty' command, allowing users to connect to google translator to translate a phrase back and forth from English to Japanese, using translationparty.com's phrases after an equilibrium is found."""
 
 import json
 import urllib2
@@ -97,9 +95,7 @@ def successstring(eq):
 
 def onLoad():
     @command('translationparty', 1)
-    def translationparty_cmd(ctx, cmd, arg, *args):
-        args = arg.split(' ')
-        message = ' '.join(args)
+    def translationparty_cmd(ctx, cmd, message, *args):
         lengres = 'null'
         lres = 'null'
         res = message
