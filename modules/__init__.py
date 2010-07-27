@@ -113,7 +113,7 @@ class TimerThread(threading.Thread):
 						try:
 							timer(*timer._args, **timer._kwargs)
 						except:
-							logger.exception("Error while running timer from module %s", timer._mod)
+							logger.exception("Error while running timer from module %s", mod)
 
 						if timer._repeats:
 							timer._curtime = timer._time
@@ -310,7 +310,7 @@ def timer_mod(mod, time, repeats=False):
 
 		f._time = time
 		f._repeats = repeats
-		f._curtime = -1 
+		f._curtime = -1
 
 		f.start = lambda *a, **kw : timer_start(mod, f, a, kw)
 		f.cancel = lambda : timer_cancel(mod, f)
