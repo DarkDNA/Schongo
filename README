@@ -62,6 +62,14 @@ Schongo Modular Bot
 				commands:
 					@ping <host>
 					@traceroute <host>
+		
+		-> tachi.py
+			An RSS feeder bot which allows for users to add and remove feeds
+				commands:
+					@feed add <name> <feed>
+					@feed remove <name>
+					@feed clear
+					@feed force <name>
 
 	- Modules by Selig Arkin -
 		-> youtube.py
