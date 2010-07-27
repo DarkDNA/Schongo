@@ -35,7 +35,7 @@ class IrcContext:
 	who = None
 	
 	def __init__(self, i, c, w):
-		if instanceof(i, str):
+		if isinstance(i, str):
 			# We're being passed a network name, not a actual irc object.
 			i = connections[i]
 
