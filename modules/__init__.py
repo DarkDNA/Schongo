@@ -110,7 +110,11 @@ class TimerThread(threading.Thread):
 			for mod in timers:
 				for timer in timers[mod]:
 					if timer._curtime == 0:
-						timer(*timer._args, **timer._kwargs)
+						try:
+							timer(*timer._args, **timer._kwargs)
+						except:
+							logger.exception("Error while running timer from module %s", timer._mod)
+
 						if timer._repeats:
 							timer._curtime = timer._time
 						else:
