@@ -24,6 +24,7 @@ persist = {}
 
 timers = {}
 
+
 logger = logging.getLogger("Modules")
 logger.setLevel(logging.INFO)
 
@@ -100,7 +101,8 @@ class TimerThread(threading.Thread):
 	
 	def run(self):
 		global timers
-		while True:
+		self.run = True
+		while self.run:
 			for mod in timers:
 				for timer in timers[mod]:
 					if timer._curtime == 0:
@@ -112,6 +114,12 @@ class TimerThread(threading.Thread):
 					elif timer._curtime > 0:
 						timer._curtime -= 1
 			time.sleep(1)
+
+	def stop(self):
+		self.run = False
+
+timerThread = TimerThread()
+
 # Methods
 		
 def fire_hook(hook, *args, **kw):
@@ -131,7 +139,7 @@ def init():
 	for i in cfg_basic.getlist("autoload modules"):
 		load_module(i)
 
-	timerThread = TimerThread()
+
 	timerThread.start()
 
 
@@ -139,6 +147,8 @@ def shutdown():
 	unloadables = mods.keys()
 	for i in unloadables:
 		unload_module(i)
+
+	timerThread.stop()
 
 	save_persist()
 
@@ -175,9 +185,12 @@ def load_module(mod):
 	
 	theMod = __import__(mod, globals(), locals(), [], -1)
 
+	theMod.handle_command = handle_command
+
 	theMod.command = lambda *a, **kw : command_mod(mod, *a, **kw)
 	theMod.hook = lambda h : hook_mod(mod, h)
 	theMod.timer = lambda *a, **kw : timer_mod(mod, *a, **kw)
+	theMod.parent_cmd = lambda n : parent_cmd_mod(mod, n)
 
 	theMod.logger = logging.getLogger("Module %s" % mod)
 	theMod.cfg = config.get_section("Module/%s" % mod, True)
@@ -210,7 +223,8 @@ def unload_module(mod):
 			del hook[mod]
 
 	global timers
-	del timers[mod]
+	if mod in timers:
+		del timers[mod]
 	
 	toDel = []
 	
@@ -293,124 +307,137 @@ def timer_mod(mod, time, repeats=False):
 		return f
 	return retTimer
 
+
+def parent_cmd_mod(mod, name):
+	@command_mod(mod, name)
+	def parentCmd(ctx, cmd, arg):
+		if not handle_command(ctx, arg, cmd):
+			ctx.error("No such sub-command")
+
+# Helpers
+
 command = lambda *a, **kw : command_mod("__init__", *a, **kw)
 hook = lambda h : hook_mod("__init__", h)
-	
+parent_cmd = lambda n : parent_cmd_mod("__init__", n)
+
 # Core Code
-	
-@command("load", 2)
-def load_cmd(ctx, cmd, arg, what, *args):
+
+parent_cmd("load")
+parent_cmd("unload")
+
+@command(["load module", "load mod"], 1)
+def load_cmd(ctx, cmd, arg, *args):
 	"""load module <mod1> [mod2]...
 	Loads the given modules"""
 	modulesLoaded = 0
-	if what == "module" or what == "mod":
-		for mod in args:
-			try:
-				load_module(mod)
-				ctx.reply("Done.", "Load")
-				modulesLoaded += 1
-			except Exception, e:
-				ctx.reply("Error loading %s: %s" % (mod,e), "Load")
-		if modulesLoaded > 0:
-			if modulesLoaded == 1:
-				ctx.reply("Loaded %s module" % modulesLoaded, "Load")
-			else:
-				ctx.reply("Loaded %s modules" % modulesLoaded, "Load")
-			
-	else:
-		ctx.error("Unknown 'load' sub-command: %s" % what);
-
-@command("unload", 2)
-def unload_cmd(ctx, cmd, arg, what, *args):
-	"""unload module <mod1> [mod2]...
-	unloads the given modules additional commands may be added to this later, but for now module is the only one"""
-	if what == "module" or what == "mod":
-		modulesUnloaded = 0
-		for mod in args:
-			try:
-				unload_module(mod)
-				ctx.reply("Done.", "Unload")
-				modulesUnloaded += 1
-			except Exception, e:
-				ctx.reply("Error unloading %s: %s" % (mod,e), "Unload")
-		if modulesUnloaded > 0:
-			if modulesUnloaded == 1:
-				ctx.reply("Unloaded %s module" % modulesUnloaded, "Unload")
-			else:
-				ctx.reply("Unloaded %s modules" % modulesUnloaded, "Unload")
-	else:
-		ctx.error("Unknown 'unload' sub-command: %s" % what);
-
-@command("info", 2, 2)
-def info_cmd(ctx, cmd, arg, what, *args):
-	"""info <module|command> <data>
-	Retrieves additional information about the module or command, in a human-readable manner"""
-	if what == "module" or what == "mod":
-		ctx.reply("Information available for module %s:" % args[0])
+	for mod in args:
 		try:
-			m = args[0]
-			mod = mods[m]
-			doc = (mod.__doc__ or "").split("\n", 1)[0];
-			if doc == "":
-				doc = "*** This module doesn't provide a doc string, yell at the author."
-			ctx.reply("%s" % doc, m, False)
-			try:
-				info = mod.__info__
-				ctx.reply("Author: %s" % info['Author'], m, False)
-				ctx.reply("Version: %s" % info['Version'], m, False)
-			except AttributeError:
-				ctx.reply("Additional information not available")
-		except KeyError:
-			ctx.reply("[[ Information not available as module is not loaded. ]]")
-	elif what == "command" or what == "cmd":
-		c = args[0]
-		if c in commands:
-			#ctx.reply("Info for command %s" % c)
-			#ctx.reply("[%s] %d min args" % (c, c._args))
-			s = "Command %s" % c
-			theCmd = commands[c]
-
-			minarg = theCmd._min
-			maxarg = theCmd._max
-
-			if minarg != -1 and maxarg == -1:
-					s += "(>%d)" % (minarg - 1)
-			elif minarg == -1 and maxarg == -1:
-				s += "(Any)"
-			elif minarg == maxarg:
-				s += "(%d)" % minarg
-			elif minarg != -1 and maxarg != -1:
-				s += "(%d to %d)" % (minarg, maxarg)
-			else:
-				s += ": ** This should never happen **"
-
-			if theCmd._mod != "__init__":
-				s += " from module %s: " % theCmd._mod
-			else:
-				s += ": "
-
-
-			parts = (theCmd.__doc__ or "").split("\n", 1)
-			usage = parts[0]
-
-			if len(parts) > 1:
-				body = parts[1]
-			else:
-				body = ""
-
-			if usage != "":
-				s += usage
-			else:
-				s += "[[ No usage info given. ]]"
-
-			ctx.reply(s, "Info")
-
-			if body != "":
-				ctx.reply(body, "Info")
+			load_module(mod)
+			ctx.reply("Done.", "Load")
+			modulesLoaded += 1
+		except Exception, e:
+			ctx.reply("Error loading %s: %s" % (mod,e), "Load")
+	if modulesLoaded > 0:
+		if modulesLoaded == 1:
+			ctx.reply("Loaded %s module" % modulesLoaded, "Load")
 		else:
-			ctx.reply("I don't seem to have any data available for that command.")
+			ctx.reply("Loaded %s modules" % modulesLoaded, "Load")
+
+@command(["unload mod", "unload module"], 1)
+def unload_cmd(ctx, cmd, arg, *mods):
+	"""unload module <mod1> [mod2]...
+unloads the given modules additional commands may be added to this later, but for now module is the only one"""
+	modulesUnloaded = 0
+	for mod in args:
+		try:
+			unload_module(mod)
+			ctx.reply("Done.", "Unload")
+			modulesUnloaded += 1
+		except Exception, e:
+			ctx.reply("Error unloading %s: %s" % (mod,e), "Unload")
+
+	if modulesUnloaded > 0:
+		if modulesUnloaded == 1:
+			ctx.reply("Unloaded %s module" % modulesUnloaded, "Unload")
+		else:
+			ctx.reply("Unloaded %s modules" % modulesUnloaded, "Unload")
+
+parent_cmd("info")
+
+@command(["info module", "info mod"], 1, 1)
+def info_mod_cmd(ctx, cmd, arg, mod, *args):
+	"""info module <module>
+Retrieves additional information about the module"""
+	ctx.reply("Information available for module %s:" % args[0])
+	try:
+		m = args[0]
+		mod = mods[m]
+		if hasattr(mod, "__doc__"):
+			doc = mod.__doc__.split("\n")
+			if doc[0] == "":
+				doc = doc[1]
+			else:
+				doc = doc[0]
+		else:
+			doc = "*** This module doesn't provide a doc string, yell at the author."
+
+		ctx.reply("%s" % doc, m, False)
+		try:
+			info = mod.__info__
+			ctx.reply("Author: %s" % info['Author'], m, False)
+			ctx.reply("Version: %s" % info['Version'], m, False)
+		except AttributeError:
+			ctx.reply("Additional information not available")
+	except KeyError:
+		ctx.reply("[[ Information not available as module is not loaded. ]]")
+
+@command(["info command", "info cmd"])
+def info_cmd_cmd(ctx, cmd, arg):
+	"""info command <command>
+Spits out information for <command> (If we have any)"""
+	if arg in commands:
+		s = "Command %s" % arg
+		theCmd = commands[arg]
+
+		minarg = theCmd._min
+		maxarg = theCmd._max
+
+		if minarg != -1 and maxarg == -1:
+				s += "(>%d)" % (minarg - 1)
+		elif minarg == -1 and maxarg == -1:
+			s += "(Any)"
+		elif minarg == maxarg:
+			s += "(%d)" % minarg
+		elif minarg != -1 and maxarg != -1:
+			s += "(%d to %d)" % (minarg, maxarg)
+		else:
+			s += ": ** This should never happen **"
+
+		if theCmd._mod != "__init__":
+			s += " from module %s: " % theCmd._mod
+		else:
+			s += ": "
+
+
+		parts = (theCmd.__doc__ or "").split("\n", 1)
+		usage = parts[0]
+
+		if len(parts) > 1:
+			body = parts[1]
+		else:
+			body = ""
+
+		if usage != "":
+			s += usage
+		else:
+			s += "[[ No usage info given. ]]"
+
+		ctx.reply(s, "Info")
+
+		if body != "":
+			ctx.reply(body, "Info")
 	else:
-		ctx.error("Unknown info element: %s" % what)
+		ctx.reply("I don't seem to have any data available for that command.")
 
 @command("shutdown")
 def shutdown_cmd(ctx, cmd, arg):
@@ -423,11 +450,11 @@ def shutdown_cmd(ctx, cmd, arg):
 	for net in connections:
 		connections[net].disconnect(arg)
 	
-
-
-def handle_command(ctx, line):
+def handle_command(ctx, line, parentcmd=None):
 	parts = line.split(' ',1)
 	cmd = parts[0]
+	if parentcmd is not None:
+		cmd = '%s %s' % (parentcmd, cmd)
 	if len(parts) > 1:
 		arg = parts[1]
 		args = arg.split(' ')
@@ -447,8 +474,11 @@ def handle_command(ctx, line):
 				cmdf(ctx, cmd, arg, *args)
 		except Exception, e:
 			logger.warn("Error running command %s: %s", cmd, e)
-	else:
+		return True
+	elif parentcmd is None:
 		fire_hook("command", ctx, cmd, arg, args)
+	else:
+		return False
 	
 @hook("message")
 def command_processor(ctx, msg):
