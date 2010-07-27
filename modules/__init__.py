@@ -17,7 +17,7 @@ mods = {}
 cfg_basic = None
 config = None
 
-global persist,timers
+global persist,timers,connections
 
 connections = {}
 persist = {}
@@ -35,6 +35,10 @@ class IrcContext:
 	who = None
 	
 	def __init__(self, i, c, w):
+		if instanceof(i, str):
+			# We're being passed a network name, not a actual irc object.
+			i = connections[i]
+
 		self.irc = i
 		self.chan = c
 		self.who = w
@@ -194,6 +198,8 @@ def load_module(mod):
 
 	theMod.logger = logging.getLogger("Module %s" % mod)
 	theMod.cfg = config.get_section("Module/%s" % mod, True)
+
+	theMod.IrcContext = IrcContext
 
 	if hasattr(theMod, "__persist__"):
 		global persist
