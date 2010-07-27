@@ -445,6 +445,13 @@ Spits out information for <command> (If we have any)"""
 	else:
 		ctx.reply("I don't seem to have any data available for that command.")
 
+@command("info networks", 0, 0)
+def info_networks_cmd(ctx, cmd, arg):
+	"""info networks
+Spits out information on the networks we are connected to."""
+	s = "I am currently connected to the following networks: %s" % ', '.join(connections.keys())
+	ctx.reply(s, "Info")
+
 @command("shutdown")
 def shutdown_cmd(ctx, cmd, arg):
 	"""Shuts down the bot with the given message"""

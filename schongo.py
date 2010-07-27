@@ -129,7 +129,7 @@ The config file should go in the data directory""")
 		)
 		sch.connect()
 		sch.start()
-		schongos[net] = sch
+		schongos[i] = sch
 	
 	modules.connections = schongos
 
