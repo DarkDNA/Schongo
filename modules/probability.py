@@ -1,6 +1,4 @@
-"""
-Adds the 'probability' command, which calculates the number of possible word and sentence permutations, depending on word length.
-"""
+"""Adds the 'probability' command, which calculates the number of possible word and sentence permutations, depending on word length."""
 
 import urllib2
 import urllib

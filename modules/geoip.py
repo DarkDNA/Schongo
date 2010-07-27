@@ -1,5 +1,4 @@
-"""Adds the 'geoip' command, which attempts to resolve a location for an IP or hostname.
-"""
+"""Adds the 'geoip' command, which attempts to resolve a location for an IP or hostname."""
 
 import urllib2
 import xml.dom.minidom as dom
