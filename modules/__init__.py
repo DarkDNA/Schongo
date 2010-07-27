@@ -130,7 +130,7 @@ def fire_hook(hook, *args, **kw):
 			try:
 				hooks[hook][m](*args, **kw)
 			except Exception, e:
-				logger.warn("Hook %s crashed when running module %s: %s", hook, m, e)
+				logger.exception("Hook %s crashed when running module %s", hook, m)
 
 
 def init():
@@ -473,7 +473,7 @@ def handle_command(ctx, line, parentcmd=None):
 			else:
 				cmdf(ctx, cmd, arg, *args)
 		except Exception, e:
-			logger.warn("Error running command %s: %s", cmd, e)
+			logger.exception("Error running command %s", cmd)
 		return True
 	elif parentcmd is None:
 		fire_hook("command", ctx, cmd, arg, args)
