@@ -336,11 +336,11 @@ parent_cmd("load")
 parent_cmd("unload")
 
 @command(["load module", "load mod"], 1)
-def load_cmd(ctx, cmd, arg, *args):
+def load_cmd(ctx, cmd, arg, *mods):
 	"""load module <mod1> [mod2]...
 	Loads the given modules"""
 	modulesLoaded = 0
-	for mod in args:
+	for mod in mods:
 		try:
 			load_module(mod)
 			ctx.reply("Done.", "Load")
@@ -358,7 +358,7 @@ def unload_cmd(ctx, cmd, arg, *mods):
 	"""unload module <mod1> [mod2]...
 unloads the given modules additional commands may be added to this later, but for now module is the only one"""
 	modulesUnloaded = 0
-	for mod in args:
+	for mod in mods:
 		try:
 			unload_module(mod)
 			ctx.reply("Done.", "Unload")
@@ -375,12 +375,11 @@ unloads the given modules additional commands may be added to this later, but fo
 parent_cmd("info")
 
 @command(["info module", "info mod"], 1, 1)
-def info_mod_cmd(ctx, cmd, arg, mod, *args):
+def info_mod_cmd(ctx, cmd, arg, m, *args):
 	"""info module <module>
 Retrieves additional information about the module"""
 	ctx.reply("Information available for module %s:" % args[0])
 	try:
-		m = args[0]
 		mod = mods[m]
 		if hasattr(mod, "__doc__"):
 			doc = mod.__doc__.split("\n")
@@ -398,6 +397,7 @@ Retrieves additional information about the module"""
 			ctx.reply("Version: %s" % info['Version'], m, False)
 		except AttributeError:
 			ctx.reply("Additional information not available")
+
 	except KeyError:
 		ctx.reply("[[ Information not available as module is not loaded. ]]")
 
