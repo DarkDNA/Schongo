@@ -1,8 +1,7 @@
 """Interfaces with the bit.ly URL shortening service
 
 Adds the 'bitly' command.
-Also adds a sniffer to find bit.ly urls and expand them
-"""
+Also adds a sniffer to find bit.ly urls and expand them"""
 
 import urllib2
 import urllib
