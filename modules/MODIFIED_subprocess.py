@@ -1,3 +1,5 @@
+"""A modified copy of the subprocess module, modified by Wil Hall. Fixes command parsing/escaping. commands fed to MODIFIED_subprocess.Popen should be in the form of strings which are escaped and parsed using split() from the shlex module."""
+
 # subprocess - Subprocesses with accessible I/O streams
 #
 # For more information about this module, see PEP 324.
