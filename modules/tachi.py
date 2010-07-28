@@ -8,7 +8,7 @@ import urllib2
 import re
 __info__ = {
 	"Author": "Ross Delinger",
-	"Version": "1.1",
+	"Version": "1.1.1",
 	"Dependencies": []
 }
 
@@ -29,6 +29,15 @@ def formatDesc(fullDesc):
 		finalDesc = finalDesc[:350].replace('\n','')
 	finalDesc = '\"%s...\"' % finalDesc
 	return finalDesc
+	
+def sendUpdateToIRC(feed, title):
+	dataList = feedData[feed]
+	ctx = IrcContext(dataList[1], dataList[2], "CurseYouCatFace")
+	link = xml.getElementsByTagName("link")[1].firstChild.data
+	desc = formatDesc(xml.getElementsByTagName('description')[1].firstChild.data)
+	ctx.reply("New post: %s | %s | %s" % (title, link, desc), dataList[0])
+	lastTitles[feed] = title
+	
 def onLoad():
 	
 	@timer(300,True)#update every 5 minutes
@@ -41,12 +50,7 @@ def onLoad():
 				title = xml.getElementsByTagName("title")[1].firstChild.data
 				
 				if title != lastTitles[feed]:
-					dataList = feedData[feed]
-					ctx = IrcContext(dataList[1], dataList[2], "CurseYouCatFace")
-					link = xml.getElementsByTagName("link")[1].firstChild.data
-					desc = formatDesc(xml.getElementsByTagName('description')[1].firstChild.data)
-					ctx.reply("New post: %s | %s | %s" % (title, link, desc), dataList[0])
-					lastTitles[feed] = title
+					sendUpdateToIRC(feed, title)
 	
 	@command("feed",1,3)
 	def Rss(ctx, cmd, arg, *args):
@@ -78,11 +82,7 @@ def onLoad():
 					site = urllib2.urlopen(feed)
 					xml = dom.parse(site)
 					title = xml.getElementsByTagName("title")[1].firstChild.data
-					
-					link = xml.getElementsByTagName("link")[1].firstChild.data
-					desc = formatDesc(xml.getElementsByTagName('description')[1].firstChild.data)
-					ctx.reply("New post: %s | %s | %s" % (title, link, desc), name)
-					lastTitles[feed] = title
+					sendUpdateToIRC(feed, title)
 					
 		if args[0] == "remove":#remove command for removing feeds
 			name = args[1]
