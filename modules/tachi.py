@@ -43,7 +43,7 @@ def sendUpdateToIRC(feed, xml, title):
 def onLoad():
 	
 	@timer(300,True)#update every 5 minutes
-	def update_timer(ctx):#timer event
+	def update_timer():#timer event
 		feedList = feeds.values()
 		for feed in feedList:
 			if feed is not None:
@@ -54,65 +54,53 @@ def onLoad():
 				if title != lastTitles[feed]:
 					sendUpdateToIRC(feed, xml, title)
 	
-	@command("feed",1,3)
-	def Rss(ctx, cmd, arg, *args):
-	
-		if args[0] == "add":#add command for adding feeds
-			#add a feed to the module
-			if args[1] is not None:
-				name = args[1]
-				if args[2] is not None:
-					feed = args[2]
-					#time to add the feed
-					if not feeds.has_key(name):
-						feeds[name] = feed
-						feedData[feed] = [name, ctx.irc.network, ctx.chan]
-						lastTitles[feed] = ""
-						ctx.reply("Added Feed : %s" % name, "Tachikoma")
-					else:
-						ctx.error("Feed by that name already exists")
-				else:
-					ctx.error("Need a rss url")
-			else:
-				ctx.error("Feed requires a name")
-				
-		if args[0] == "force":#force update command
-			name = args[1]
-			if name is not None and feeds.has_key(name):
-				feed = feeds[name]
-				if feed is not None:
-					site = urllib2.urlopen(feed)
-					xml = dom.parse(site)
-					title = xml.getElementsByTagName("title")[1].firstChild.data
-					sendUpdateToIRC(feed, xml, title)
-					
-		if args[0] == "remove":#remove command for removing feeds
-			name = args[1]
-			if name is not None and feeds.has_key(name):
-				feed = feeds[name]
-				del feedData[feed]
-				del feeds[name]
-				del lastTitles[feed]
-				ctx.reply("Deleted: %s" % name, "Tachikoma")
-			else:
-				ctx.error("Error deleting Feed: name error")
-				
-		if args[0] == "clear": #clear all stored feeds
-			ctx.reply("Clearing Feeds", "Tachikoma")
-			feeds.clear()
-			feedData.clear()
-			lastTitles.clear()
-			ctx.reply("Clearing feeds complete", "Tachikoma")
-			
-		if args[0] == "list":#list all stored feeds
-			for name in feeds:
-				feed = feeds[name]
-				ctx.reply("%s: %s" % (name, feed), "Tachikoma")
-				
-	@hook('module_load')#used to start the timer and load it with a fake ctx in order to make it work
-	def hook_modload(modName, modObject):
-		if modName == 'tachi':
-			dummyCTX = IrcContext("DarkDna","#stoopid", "catface")
-			update_timer.start(dummyCTX)
+#	@command("feed",1,3)
 
-		
+	parent_cmd("feed")
+
+
+	@command("feed add", 2, 2)
+	def feed_add(ctx, cmd, arg, name, feed, *args):
+		if not feeds.has_key(name):
+			feeds[name] = feed
+			feedData[feed] = [name, ctx.irc.network, ctx.chan]
+			lastTitles[feed] = ""
+			ctx.reply("Added Feed : %s" % name, "Tachikoma")
+		else:
+			ctx.error("Feed by that name already exists")
+
+	@command("feed force", 1, 1)
+	def feed_force(ctx, cmd, arg, name, *args):
+		if feeds.has_key(name):
+			feed = feeds[name]
+			site = urllib2.urlopen(feed)
+			xml = dom.parse(site)
+			title = xml.getElementsByTagName("title")[1].firstChild.data
+			sendUpdateToIRC(feed, xml, title)
+		else:
+			ctx.error("No such feed `%s'" % name)
+
+	@command("feed remove", 1, 1)
+	def feed_remove(ctx, cmd, arg, name, *args):
+		if feeds.has_key(name):
+			feed = feeds[name]
+			del feedData[feed]
+			del feeds[name]
+			del lastTitles[feed]
+			ctx.reply("Deleted: %s" % name, "Tachikoma")
+		else:
+			ctx.error("Error deleting Feed: name error")
+
+	@command("feed clear", 0, 0)
+	def feed_clear(ctx, cmd, arg, *args):
+		ctx.reply("Clearing Feeds", "Tachikoma")
+		feeds.clear()
+		feedData.clear()
+		lastTitles.clear()
+		ctx.reply("Clearing feeds complete", "Tachikoma")
+
+	@command("feed list", 0, 0)
+	def feed_list(ctx, cmd, arg, *args):
+		for name in feeds:
+			feed = feeds[name]
+			ctx.reply("%s: %s" % (name, feed), "Tachikoma")
