@@ -19,7 +19,9 @@ lastTitles = {}
 
 def remove_html_tags(data):
     p = re.compile(r'<.*?>')
-    return p.sub('', data)
+    p1 = re.compile(r'[[.*?]]')
+    htmlRemoved = p.sub('', data)
+    return p1.sub('',htmlRemoved)
     
 def formatDesc(fullDesc):
 	stepOne = re.sub('<img.*alt="([^"]+)".* />', '\\1', fullDesc)# get just the alt
@@ -88,7 +90,7 @@ def onLoad():
 			name = args[1]
 			if name is not None and feeds.has_key(name):
 				feed = feeds[name]
-				del feedNames[feed]
+				del feedData[feed]
 				del feeds[name]
 				del lastTitles[feed]
 				ctx.reply("Deleted: %s" % name, "Tachikoma")
