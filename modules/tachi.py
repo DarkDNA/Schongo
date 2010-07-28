@@ -30,7 +30,7 @@ def formatDesc(fullDesc):
 	finalDesc = '\"%s...\"' % finalDesc
 	return finalDesc
 	
-def sendUpdateToIRC(feed, title):
+def sendUpdateToIRC(feed, xml, title):
 	dataList = feedData[feed]
 	ctx = IrcContext(dataList[1], dataList[2], "CurseYouCatFace")
 	link = xml.getElementsByTagName("link")[1].firstChild.data
@@ -50,7 +50,7 @@ def onLoad():
 				title = xml.getElementsByTagName("title")[1].firstChild.data
 				
 				if title != lastTitles[feed]:
-					sendUpdateToIRC(feed, title)
+					sendUpdateToIRC(feed, xml, title)
 	
 	@command("feed",1,3)
 	def Rss(ctx, cmd, arg, *args):
@@ -82,7 +82,7 @@ def onLoad():
 					site = urllib2.urlopen(feed)
 					xml = dom.parse(site)
 					title = xml.getElementsByTagName("title")[1].firstChild.data
-					sendUpdateToIRC(feed, title)
+					sendUpdateToIRC(feed, xml, title)
 					
 		if args[0] == "remove":#remove command for removing feeds
 			name = args[1]
