@@ -57,8 +57,6 @@ class IrcSocket(Thread):
 
 		self.connected = True
 		
-		self.onConnected()
-		
 		
 	def disconnect(self, reason=None):
 		self._socket.close()
@@ -93,14 +91,12 @@ class IrcSocket(Thread):
 			self.connect()
 		buffer = ""
 		while True:
-			data = 0
-			try:
-				data = self._socket.recv(512)
-			except socket.error:
-				pass
-			if data == 0 or not self.connected:
+			data = self._socket.recv(512)
+
+			if data == "" or not self.connected:
 				self.onDisconnected()
 				return
+
 			data = (buffer + data).split("\n")
 			buffer = data.pop()
 			for line in data:

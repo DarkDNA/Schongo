@@ -11,6 +11,9 @@ import os.path
 
 from config import Config
 
+global connections
+
+connections = 0
 
 version = "0.1a"
 
@@ -31,6 +34,9 @@ class SchongoClient(IrcClient):
 		
 		self.logger = logging.getLogger("IrcSocket(%s)" % self.network)
 
+		global connections
+		connections += 1
+
 	# Overrides Thread
 	def getName(self):
 		return "IrcSocket(%s)" % self.network
@@ -38,6 +44,7 @@ class SchongoClient(IrcClient):
 
 	# Overrides IrcClient, and calls super	
 	def onConnected(self):
+
 		IrcClient.onConnected(self)
 		modules.fire_hook("connected", self)
 		for i in self.channels:
@@ -47,6 +54,13 @@ class SchongoClient(IrcClient):
 	def onDisconnected(self):
 		modules.fire_hook("disconnected", self)
 		IrcClient.onDisconnected(self)
+		global connections
+
+		connections -= 1
+
+		if connections == 0:
+			self.logger.info("Shutting down.")
+			modules.shutdown()
 	
 	# Overrides IrcClient
 	def onMsg(self, chan, who, what):
@@ -77,7 +91,7 @@ def main(argv):
 			configFile = val
 
 	if configFile is None:
-		configFile = debug and "data/config-debug.cfg" or "data/config.cfg"
+		configFile = "data/config-debug.cfg" if debug else "data/config.cfg"
 
 	if not os.path.isfile(configFile):
 		if os.path.isfile("data/config.cfg"):
@@ -90,7 +104,7 @@ The config file should go in the data directory""")
 			return
 	
 
-	logging.basicConfig(level=(debug and logging.DEBUG or logging.WARN))
+	logging.basicConfig(level=(logging.DEBUG if debug else logging.WARN))
 	#logging.config.fileConfig("logging.cfg")
 
 
