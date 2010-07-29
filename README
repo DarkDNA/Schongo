@@ -83,6 +83,10 @@ Schongo Modular Bot
 		-> dynamic.py
 			Provides dynamic command functionality, explained above
 
+		-> unicode.py
+			Search through the offical unicode table, displays the given char
+			You can also search by name, but it requires it to be exact.
+
 	
 	- Modules by Wil Hall -
 		-> geoip.py
