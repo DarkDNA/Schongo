@@ -26,7 +26,6 @@ timers = {}
 
 
 logger = logging.getLogger("Modules")
-logger.setLevel(logging.INFO)
 
 class IrcContext:
 	""" Holds three important context things, and provides some helper methods for quickly replying."""
@@ -416,6 +415,8 @@ Spits out information for <command> (If we have any)"""
 				s += "(>%d)" % (minarg - 1)
 		elif minarg == -1 and maxarg == -1:
 			s += "(Any)"
+		elif minarg == 0 and maxarg == 0:
+			s += "(None)"
 		elif minarg == maxarg:
 			s += "(%d)" % minarg
 		elif minarg != -1 and maxarg != -1:
