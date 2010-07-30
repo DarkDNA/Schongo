@@ -75,7 +75,19 @@ class SchongoClient(IrcClient):
 		if cmd == "VERSION":
 			self.notice(who.nick, "\x01VERSION Schongo Bot %s\x01" % version)
 		else:
-			modules.fire_hook("ctcp", modules.IrcContext(self, chan, who), what)
+			modules.fire_hook("ctcp", modules.IrcContext(self, chan, who), cmd, arg)
+
+	# Overrides IrcClient
+	def onJoin(self, who, chan):
+		modules.fire_hook("join", modules.IrcContext(self, chan, who))
+	
+	# Overrides IrcClient
+	def onPart(self, who, chan, msg):
+		modules.fire_hook("part", modules.IrcContext(self, chan, who))
+	
+	# Overrides IrcClient
+	def onQuit(self, who, message):
+		modules.fire_hook("quit", modules.IrcContext(self, None, who))
 
 def main(argv):
 	opts, args = getopt.getopt(argv, "v:c", [ "debug", "config=" ])

@@ -150,6 +150,7 @@ class IrcClient(IrcSocket):
 	_nickPos = 0
 	realname = None
 	ident = None
+	channels = {}
 	
 	# TODO: Track channels and people
 	
@@ -208,6 +209,14 @@ class IrcClient(IrcSocket):
 	def onAction(self, chan, who, what):
 		pass
 	
+	def onJoin(self, who, chan):
+		pass
+	
+	def onPart(self, who, chan, message):
+		pass
+
+	def onQuit(self, who, message):
+		pass
 	
 	# IRC Events
 	
@@ -240,6 +249,16 @@ class IrcClient(IrcSocket):
 				else:
 					self.onCtcp(channel, msg.origin, cmd, arg)
 			self.onMsg(channel, msg.origin, message)
+		elif msg.command == "JOIN":
+			channel = msg.args[0]
+			self.onJoin(msg.origin, channel)
+		elif msg.command == "PART":
+			channel = msg.args[0]
+			message = msg.args[1] if len(msg.args) > 1 else ""
+			self.onPart(msg.origin, channel, message)
+		elif msg.command == "QUIT":
+			message = msg.args[0] if len(msg.args) > 0 else ""
+			self.onQuit(msg.origin, message)
 		elif msg.command == "001":
 			# We've successfuly connected, partay!
 			self.onConnected()
