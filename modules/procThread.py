@@ -23,7 +23,6 @@ class procThread(threading.Thread):
 			self.proc = subProc.Popen(self.procCommand, stdin=subProc.PIPE, stdout=subProc.PIPE, stderr=subProc.STDOUT)
 			for line in self.proc.stdout:
 				if line is not None and line != "\n":
-					print '\'%s\'' % line
 					self.context.reply(line.strip(),self.procCommand[0])
 			
 			
