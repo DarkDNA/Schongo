@@ -6,7 +6,7 @@ import urllib
 import urllib2
 import xml.dom.minidom as dom
 import re
-
+from _utils import prettyNumber
 
 def openUrl(url):
 	r = urllib2.Request(url, headers={
@@ -27,7 +27,7 @@ Searches through wikipedia for <search>"""
 		
 		if results > 0:
 			res = min(results, 5)
-			ctx.reply("Results 1-%d out of %d" % (res, results), "Wikipedia")
+			ctx.reply("Results 1-%d out of %s" % (res, prettyNumber(results)), "Wikipedia")
 		else:
 			ctx.reply(u"No results found for %s" % arg, "Wikipedia")
 

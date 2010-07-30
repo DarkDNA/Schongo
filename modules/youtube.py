@@ -4,6 +4,7 @@ import urllib2
 import urllib
 import xml.dom.minidom as dom
 import re
+from _utils import prettyNumber, prettyTime
 
 def YoutubeMeta(ctx, video_id):
 	meta = urllib2.urlopen("http://gdata.youtube.com/feeds/api/videos/%s" % video_id)
@@ -13,17 +14,21 @@ def YoutubeMeta(ctx, video_id):
 
 def displayMeta(ctx, data, vid):
 	"""Displays a single youtube video result, given the xml node"""
-
+	
 	s = ""
 	s += "Title: %s " % data.getElementsByTagName("title")[0].firstChild.data
-	s += " - By: %s"  % data.getElementsByTagName("author")[0].getElementsByTagName("name")[0].firstChild.data
-	s += " - View Count: %s" % data.getElementsByTagName("yt:statistics")[0].attributes["viewCount"].value
+	s += " | By: %s"  % data.getElementsByTagName("author")[0].getElementsByTagName("name")[0].firstChild.data
+	s += " | Length: %s" % prettyTime(data.getElementsByTagName("yt:duration")[0].getAttribute("seconds"))
+	s += " | View Count: %s" % prettyNumber(data.getElementsByTagName("yt:statistics")[0].getAttribute("viewCount"))
+
 	r = data.getElementsByTagName("gd:rating")
 	if len(r):
 		r = r[0]
-		s += " - Average Rating: %s/5" % r.attributes["average"].value
+		s += " | Average Rating: %1.2f/5" % float(r.getAttribute("average"))
+	else:
+		s += " | No ratings"
 
-	s += " - http://youtu.be/%s" % vid
+	s += " | http://youtu.be/%s" % vid
  
 	ctx.reply(s, "YouTube")
 
@@ -45,7 +50,7 @@ def onLoad():
 
 		if results > 0:
 			res = min(results, 5)
-			ctx.reply("Results 1-%d out of %d" % (res, results), "YouTube")
+			ctx.reply("Results 1-%d out of %s" % (res, prettyNumber(results)), "YouTube")
 		else:
 			ctx.reply("No results found for %s" % arg, "YouTube")
 
