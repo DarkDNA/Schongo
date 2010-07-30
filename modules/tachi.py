@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Named for Tachikoma the bot in irc.quickfox.net/#subnova created by _3of9
 It spams random blurbs and twitter posts all the time
@@ -37,7 +38,7 @@ def sendUpdateToIRC(feed, xml, title):
 	ctx = IrcContext(dataList[1], dataList[2], "CurseYouCatFace")
 	link = xml.getElementsByTagName("link")[1].firstChild.data
 	desc = formatDesc(xml.getElementsByTagName('description')[1].firstChild.data)
-	ctx.reply("New post: %s | %s | %s" % (title, link, desc), dataList[0])
+	ctx.reply(u'New post: %s • %s • %s' % (title, link, desc), dataList[0])
 	lastTitles[feed] = title
 	
 def onLoad():
