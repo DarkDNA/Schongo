@@ -1,3 +1,4 @@
+# coding=utf-8
 """Interfaces with the bit.ly URL shortening service
 
 Adds the 'bitly' command.
@@ -45,6 +46,6 @@ Condences <long-url> using the bit.ly url shortening service"""
 			short = m.group(0)
 			long = getLongUrl(short)
 			if long:
-				ctx.reply("`BBit.ly url:`B %s - `BLong:`B %s" % (short, long), "bitly")
+				ctx.reply(u"`BBit.ly url:`B %s • `BLong:`B %s" % (short, long), "bitly")
 			else:
 				ctx.reply("`BBit.ly url:`B %s is invalid." % short, "bitly")

@@ -1,3 +1,4 @@
+# coding=utf-8
 """Looks up information using the unicode database of happy! Yayyy!"""
 
 import unicodedata
@@ -58,5 +59,5 @@ Searches for information on <char> or does an exact-match search for a char call
 		else:
 			cat = "Unknown Category(%s)" % cat
 
-		ctx.reply(u"Char %s - U+%04X -  %s - %s" % (char, num, name, cat), "Unicode")
+		ctx.reply(u"Char %s • U+%04X •  %s • %s" % (char, num, name, cat), "Unicode")
 			

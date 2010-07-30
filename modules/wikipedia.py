@@ -1,3 +1,4 @@
+# coding=utf-8
 """Looks up information from a MediaWiki wiki - Currently only Wikipedia
 
 Please note that this is still in development and needs some kinks to be worked out still"""
@@ -41,4 +42,4 @@ Searches through wikipedia for <search>"""
 			snippet = re.sub(' ([.,!?\'])', u'\\1', snippet)
 			snippet = snippet.replace('  ', u' ')
 			# And then display it. :D
-			ctx.reply(u"`B%s`B ( %s ) - %s" % (title, "http://wikipedia.org/wiki/%s" % urllib.quote(title), snippet), "Wikipedia")
+			ctx.reply(u"`B%s`B ( %s ) • %s" % (title, "http://wikipedia.org/wiki/%s" % urllib.quote(title), snippet), "Wikipedia")

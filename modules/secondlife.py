@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Adds a interface with various SL APIs
 """
@@ -42,5 +43,5 @@ def onLoad():
 		
 		xml.unlink();
 		
-		ctx.reply("Current status is %s | Total Users: %s | Users Online: %s" % 
+		ctx.reply("Current status is %s • Total Users: %s • Users Online: %s" % 
 			( status.capitalize(), signups, inworld ), "Second Life")
