@@ -47,8 +47,6 @@ def onLoad():
 
 		decoded = jsonLoad(urlObject)
 
-		logger.warn(decoded)
-
 		results = decoded["total"]
 
 		if results > 0:
