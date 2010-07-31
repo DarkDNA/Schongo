@@ -39,6 +39,14 @@ It is not written to teach you python, just what we do with it for plugins
 
 	There are more methods, but they are mostly for internal use
 
+
+= Modules =
+	Modules are just a collection of commands, possibly hooks and timers as well.
+	They are ment to be self-sufficant.
+
+	Modules can be documented using the docstring, they should be of the format "Short Description <newline> longer description"
+	this is accesible to people via the <info module> command
+
 = Adding commands =
 	the Command decorator accepts from one, to three arguments
 	@command(name[, minargs[, maxargs]])
@@ -46,6 +54,8 @@ It is not written to teach you python, just what we do with it for plugins
 	command(ctx, cmd, arg) Otherwise, it appends the given arguments using the python * operator, so if you define a function with
 	@command(name, 2) it must accpet atleast 2 arguments, or use the *args thing to handle otherwise
 	
+	Commands can be documented using the docstring of the function, they should be of the form usage <newline> description
+
 	At this time there is no penialty for malformed commands, but in the future they may be removed from the command stack
 
 
