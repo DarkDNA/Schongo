@@ -1,0 +1,99 @@
+*** THIS README ASSUMES YOU KNOW PYTHON ON SOME LEVEL ***
+It is not written to teach you python, just what we do with it for plugins
+
+= Intro =
+	Selig has worked hard to make it so plugins can be written for a large varity of things to do with minimal effort
+	In general, plugins should not need to  communicate with one-another, in fact, at this time, that is not easily possible
+	*THIS IS BY DESIGN*
+	It's designed with this feature omitted to prevent modules from requiring eachother in ways that could cause a single module
+	to become nessary to the core, which is agenst the design principals of the bot ( "Not too modular" )
+
+
+
+= Begining Notes =
+	all hooks, commands, and timers must be defined in the onLoad function, or a function called from there
+	At this time, it is not possible to inject the command, timer, hook function decorators into the module before it runs the top-level
+	code
+
+	You will see things like 'ctx' in here, this is the generic name for an IrcContext object
+
+= IrcContext objects =
+	You will notice we use the var 'ctx' here alot, it is refering to an IrcContext object.
+
+	The IrcContext's main job is to simplyfying the reply to the given input, and to hold context inforation for an IRC Message, namely:
+		* the calling irc client           ( irc )
+		* The channel the event happen in  ( chan ) 
+		* Who the event happen from        ( who )
+
+	You shouldn't need to access these in general use, but they are available
+
+	It's methods are below:
+		reply(message,[tag, [parse, [parse newlines, [parse literal \n]]]])			
+			reply to the given context with the message of <message> - the given header tag of <tag>, the rest define what should and should not be parsed
+
+		error(message)
+			Replys with an error result, with the error message of message
+
+		notice(message)
+			Replys using a NOTICE message
+
+	There are more methods, but they are mostly for internal use
+
+= Adding commands =
+	the Command decorator accepts from one, to three arguments
+	@command(name[, minargs[, maxargs]])
+	Only the first argument is required, if you do not give the min or max args, it assumes it is a "dumb" command, of the form 
+	command(ctx, cmd, arg) Otherwise, it appends the given arguments using the python * operator, so if you define a function with
+	@command(name, 2) it must accpet atleast 2 arguments, or use the *args thing to handle otherwise
+	
+	At this time there is no penialty for malformed commands, but in the future they may be removed from the command stack
+
+
+= Using Timers =
+	When you use the timer decorator:
+	@timer(time[, repeat])
+	You are specifying to the core that the below function is a timer for <time> seconds, and wether or not it repeats
+	After this, the timer decorator adds two methods to the function
+		start(*args, **kwargs)
+			Starts the countdown, when it hits zero it calls the timer with the given args and keyword args
+		cancel()
+			Stops the countdown and resets the timer
+			Also stops the timer from repeating
+= Hooks =
+	Hooks are a very complex subject, as they have no defined structure
+	They are defined with:
+	@hook("hookName")
+	and are of the form that the given hook must take
+	The hook's and their forms are like so:
+	
+	-> message(ctx, message)
+		Called on a message line recived
+
+	-> action(ctx, msg)
+		Called when somebody does a /me action in the channel
+
+	-> command(ctx, command, arg, args)
+		Called when we detect a command, this is not recommended to be used for places where the @command decorator will work
+		better, such as normal command usage, but instead for use of dynamic commands
+
+	-> join(ctx)
+		Called when someone joins the channel
+
+	-> part(ctx, message)
+		Called when someone parts the channel
+
+	-> quit(ctx, message)
+		Called when someone quits from IRC
+
+	-> ctcp(ctx, cmd, arg)
+		Called when we detect a CTCP message
+			* This is not called for the CTCP VERSION message
+
+	-> module_preload(module name, module object)
+		Called when a module has been loaded, but before the module's onLoad is called
+
+	-> module_load(module name, module object)
+		Called after the module's onLoad has been called
+
+	-> module_unload(module name, module object)
+		Called when we are unloading a module
