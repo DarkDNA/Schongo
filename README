@@ -73,6 +73,9 @@ Schongo Modular Bot
 					@feed remove <name>
 					@feed clear
 					@feed force <name>
+		-> SO.py
+			An interface with stackoverflow.com Used to search by tags
+					@so <tag> <tag> <tag>
 
 	- Modules by Selig Arkin -
 		-> youtube.py
@@ -92,6 +95,11 @@ Schongo Modular Bot
 		-> geoip.py
 		-> bitly.py
 		-> probability.py
+
+
+= Notes =
+
+When writing modules always remember to set a minimum number of arguments when using @command or else the args variable will be blank.
 		
 	
 	

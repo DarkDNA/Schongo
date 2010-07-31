@@ -23,7 +23,7 @@ def decompress(data):
 	return StringIO(decompressed)
 
 def onLoad():
-	@command("so")
+	@command("so",1)
 	def search(ctx, cmd, arg, *args):
 		args = arg.split(' ')
 		thingy = ";".join(args)
