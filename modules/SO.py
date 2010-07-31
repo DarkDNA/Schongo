@@ -11,7 +11,7 @@ from _utils import prettyNumber
 
 __info__ = {
 	"Author": "Ross Delinger",
-	"Version": "1.0",
+	"Version": "1.0.2",
 	"Dependencies": []
 }
 
@@ -58,8 +58,7 @@ def onLoad():
 
 		for q in decoded['questions']:
 			title = q['title']
-			commentURL = q['question_comments_url'].split('/')
-			questionURL = qURL % (commentURL[1], commentURL[2])
+			questionURL = qURL % ('questions', q['question_id'])
 			ctx.reply(u'%s • %s' % (title, questionURL), 'StackOverflow')
 				
 			
