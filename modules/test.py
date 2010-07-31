@@ -22,3 +22,16 @@ def onLoad():
 		ctx.reply("Ohh. *nom*")
 		bacon_timer.cancel()
 
+	@command("test crash")
+	def crash_cmd(ctx, cmd, arg):
+		None.dicks()
+
+	@hook("message")
+	def crash_hook(ctx, msg):
+		if msg == "CRASH":
+			None.dicks()
+
+	@hook("join")
+	def join_hook(ctx):
+		if ctx.chan == "#schongo-dev":
+			ctx.reply("Welcome!")

@@ -17,6 +17,9 @@ Schongo Modular Bot
 	
 	Then type this into terminal or cmdline:
 		python schongo.py
+
+= Developing =
+	For notes on developing plugins for Schongo please cread the `DEV README' file
 		
 = The Basics =
 	- Commands -
@@ -96,14 +99,3 @@ Schongo Modular Bot
 		-> bitly.py
 		-> probability.py
 
-
-= Notes =
-
-When writing modules always remember to set a minimum number of arguments when using @command or else the args variable will be blank.
-		
-	
-	
-	
-
-				
-	
