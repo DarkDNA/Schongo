@@ -92,11 +92,7 @@ class SchongoClient(IrcClient):
 	# Overrides IrcClient
 	def onTopic(self, who, chan, topic):
 		modules.fire_hook("topic", modules.IrcContext(self,chan,who),topic)
-		
-	# Overrides IrcClient
-	def onMode(self, who, chan, target, modes):
-		modules.fire_hook("mode", modules.IrcContext(self, chan, who), target, modes)
-		
+				
 def main(argv):
 	opts, args = getopt.getopt(argv, "v:c", [ "debug", "config=" ])
 	print(opts)

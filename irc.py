@@ -219,8 +219,6 @@ class IrcClient(IrcSocket):
 	def onTopic(self, who, chan, topic):
 		pass
 		
-	def onMode(self, who, chan, target, modes):
-		pass
 	
 	# IRC Events
 	
@@ -269,19 +267,6 @@ class IrcClient(IrcSocket):
 		elif msg.command == "TOPIC":#added by teh leet Posiden!
 			channel = msg.args[0]
 			topic = msg.args[1]
-			self.onTopic(msg.origin,channel,topic)
-		elif msg.command == "MODE":	
-			if len(msg.args) == 3:#for when channel is specified
-				channel = msg.args[0]
-				modes = msg.args[1]
-				target = msg.args[2]
-				self.onMode(msg.origin, channel, target,modes)
-			else:#for when the channel is NOT specified
-				channel = None
-				target = msg.args[0]
-				modes = msg.args[1]
-				self.onMode(msg.origin, channel, target, modes)
-		#also created by Posiden, MODE is a tad funky due to the fact that the length of args changes
-		#some times args is 2 and sometimes it is 3 so we have two different cases here	
+			self.onTopic(msg.origin,channel,topic)	
 		else:
 			IrcSocket.onMessage(self, msg)

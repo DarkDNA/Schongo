@@ -41,7 +41,4 @@ def onLoad():
 		nick = ctx.who.__str__().split('!')[0]
 		ctx.reply("%s is a topic changin bitch!" % nick, "Topic Alarm")
 	
-	@hook("mode")
-	def mode_hook(ctx, target, modes):
-		ident = ctx.who.__str__()
-		ctx.reply('%s changed the mode of %s to %s' % (ident, target, modes), "Mode Alarm")	
+	
