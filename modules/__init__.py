@@ -228,8 +228,8 @@ def unload_module(mod):
 	# Clean up!
 	
 	for hook in hooks:
-		if mod in hook:
-			del hook[mod]
+		if mod in hooks[hook]:
+			del hooks[hook][mod]
 
 	global timers
 	if mod in timers:
