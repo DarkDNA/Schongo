@@ -216,6 +216,9 @@ class IrcClient(IrcSocket):
 	def onQuit(self, who, message):
 		pass
 	
+	def onTopic(self, who, message):
+		pass
+	
 	# IRC Events
 	
 	def onMessage(self, msg):
@@ -260,5 +263,12 @@ class IrcClient(IrcSocket):
 		elif msg.command == "001":
 			# We've successfuly connected, partay!
 			self.onConnected()
+			
+		
+		elif msg.command == "TOPIC":#added by teh leet Posiden!
+			channel = msg.args[0]
+			topic = msg.args[1]
+			self.onTopic(msg.origin,channel,topic)
+			
 		else:
 			IrcSocket.onMessage(self, msg)
