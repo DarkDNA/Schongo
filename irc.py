@@ -1,5 +1,5 @@
 import socket
-from threading import Thread;
+from threading import Thread
 import logging
 
 class IrcOrigin:
@@ -36,14 +36,13 @@ class IrcSocket(Thread):
 	logger = None
 	
 	
-	def __init__(self, server=None, port=6667):
-		Thread.__init__(self)
+	def __init__(self, server, port=6667):
+		Thread.__init__(self, name="IrcSocket(%s)" % server)
 		
-		if server is not None:
-			self._server = server
+		self._server = server
 		self._port = port
 		
-		self.logger = logging.getLogger("IrcSocket")
+		self.logger = logging.getLogger("IrcSocket(%s)" % self._server)
 		
 	def connect(self):
 		
@@ -105,7 +104,7 @@ class IrcSocket(Thread):
 					line = line.decode('utf-8')
 				except UnicodeDecodeError, error:
 					self.logger.warn('Could not decode UTF-8 string sent by socket: %s' % error)
-				#print("=>" + line);
+
 				self.logger.debug("=> %s" % line)
 				self.onLine(line)
 	
@@ -141,9 +140,8 @@ class IrcSocket(Thread):
 		pass
 	
 	def onDisconnected(self):
-		pass
-			
-			
+		pass	
+
 class IrcClient(IrcSocket):
 	nicks = []
 	nick = None
@@ -264,4 +262,3 @@ class IrcClient(IrcSocket):
 			self.onConnected()
 		else:
 			IrcSocket.onMessage(self, msg)
-	
