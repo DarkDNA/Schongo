@@ -457,6 +457,14 @@ Spits out information on the networks we are connected to."""
 	s = "I am currently connected to the following networks: %s" % ', '.join(connections.keys())
 	ctx.reply(s, "Info")
 
+@command(["info modules","info mods"], 0, 0)
+def info_modules_cmd(ctx, cmd, arg):
+	"""info modules
+Lists the currently loaded modules"""
+	s = "I currently have the following modules loaded: %s" % ', '.join(mods.keys())
+	ctx.reply(s, "Info")
+
+
 @command("shutdown")
 def shutdown_cmd(ctx, cmd, arg):
 	"""Shuts down the bot with the given message"""
