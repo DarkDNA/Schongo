@@ -59,9 +59,9 @@ Condences <long-url> using the given service (currently defaults to bit.ly)"""
 			else:
 				short = shorten[service](url)
 
-			slen = len(short)
-			llen = len(url)
-			ctx.reply(u"`BShort URL:`B %s • Long: %d • Short: %d • Compression: TODO%%" % (short, llen, slen), 'shorten')
+			slen = float(len(short))
+			llen = float(len(url))
+			ctx.reply(u"`BShort URL:`B %s • Long: %d • Short: %d • Compression: %d%%" % (short, llen, slen, ((llen-slen)/llen) * 100), 'shorten')
 		except urllib2.URLError:
 			ctx.error("Error processing your request, please try again later")
 
