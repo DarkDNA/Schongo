@@ -479,6 +479,14 @@ Lists the currently loaded modules"""
 	s = "I currently have the following modules loaded: %s" % ', '.join(mods.keys())
 	ctx.reply(s, "Info")
 
+@command("info threads", 0, 0)
+def info_threads_cmd(ctx, cmd, arg):
+	"""info threads
+Lists the currently running threads"""
+	s = "I currently have the following threads running: %s" 
+	s = s % ', '.join([ t.getName() for t in threading.enumerate() ])
+	ctx.reply(s, "Info")
+
 
 @command("shutdown")
 def shutdown_cmd(ctx, cmd, arg):
