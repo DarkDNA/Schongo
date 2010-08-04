@@ -16,7 +16,7 @@ def onLoad():
 	def ping(ctx, cmd, arg, *args):
 		address = args[0]
 		shellCmd = ["ping", "-c", "5", address]
-		pt = _utils.procThread(shellCmd, ctx)
+		pt = _utils.procThread(shellCmd, ctx, None)
 		pt.start()
 		
 	@command(["traceroute", "tr", "tracert"], 1)
@@ -36,6 +36,6 @@ def onLoad():
 		else:
 			logger.debug("Unix based system detected: %s" % os.name)
 			shellCmd = ["traceroute", address]
-			pt = _utils.procThread(shellCmd, ctx, ['*'])
+			pt = _utils.procThread(shellCmd, ctx, [' * * *'])
 			pt.start()
 			

@@ -2,6 +2,7 @@ import locale
 import subprocess as subProc
 import os
 import threading
+import time
 locale.setlocale(locale.LC_ALL, "")
 
 def prettyNumber(num):
@@ -36,14 +37,19 @@ class procThread(threading.Thread):
 		self.ignoreList = ignore
 	
 	def run(self):
-		if self.procCmd is not None:
-			self.proc = subProc.Popen(self.procCmd, stdin=subProc.PIPE, stdout=subProc.PIPE, stderr=subProc.STDOUT)
+		if self.procCmd is not None:			
+			self.proc = subProc.Popen(self.procCmd, 
+				stdin=subProc.PIPE, 
+				stdout=subProc.PIPE, 
+				stderr=subProc.STDOUT)
 			for line in self.proc.stdout:#cycle through the output
-				for ignore in self.ignoreList:#strip all specified chars out
-					if ignore in line and ignore is not None:
-						line.replace(ignore, '')
-				if line != ' ' and line != None and line != '' and line != '\n':
+				if self.ignoreList is not None:
+					for ignore in self.ignoreList:#strip all specified chars out
+						if ignore in line and ignore is not None:
+							line.replace(ignore, '')
+				if line != ' ' and line != None and line != '' and line != '\n' and ' * * *' not in line:
 					self.context.reply(line.strip(),self.procCmd[0]) #send the stripped line to IRC
+					time.sleep(2)
 			
 			
 		else:
@@ -53,4 +59,4 @@ class procThread(threading.Thread):
 		os.kill(self.proc.pid, signal.CTRL_C_EVENT)
 		ctx.reply("Killed process", self.procCommand[0])
 	def send_input(self, line):
-			self.proc.stdin.write(ctx.)
+			self.proc.stdin.write(line)
