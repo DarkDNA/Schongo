@@ -35,6 +35,7 @@ class IrcContext:
 	
 	def __init__(self, i, c, w):
 		if isinstance(i, str):
+			global connections
 			# We're being passed a network name, not a actual irc object.
 			i = connections[i]
 
@@ -80,7 +81,6 @@ class IrcContext:
 		'`U': '\x1F',
 		'`O': '\x0F' }
 
-
 	def say(self, chan, msg, parse=True):
 		if parse:
 			if msg.startswith("/me "):
@@ -96,6 +96,21 @@ class IrcContext:
 	
 	def ctcp_reply(self, cmd, arg):
 		self.notice("\x01%s %s\x01" % (cmd, arg))
+
+	@staticmethod
+	def fromString(string, ctx=None):
+		parts = string.split("->")
+
+		if len(parts) > 2:
+			net = parts[0]
+			chan = parts[1]
+		elif ctx is not None:
+			net = ctx.irc
+			chan = string
+		else:
+			return None
+
+		return IrcContext(net, chan, None)
 
 
 class TimerThread(threading.Thread):

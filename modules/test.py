@@ -26,6 +26,11 @@ def onLoad():
 	def crash_cmd(ctx, cmd, arg):
 		None.dicks()
 
+	@command("test say", 2)
+	def say_cmd(ctx, cmd, arg, *args):
+		where, what = arg.split(' ', 1)
+		IrcContext.fromString(where, ctx).reply("Ohai from %s! %s" % ( ctx.chan, what))
+
 	@hook("message")
 	def crash_hook(ctx, msg):
 		if msg == "CRASH":
