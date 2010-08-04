@@ -90,7 +90,11 @@ class IrcSocket(Thread):
 			self.connect()
 		buffer = ""
 		while True:
-			data = self._socket.recv(512)
+
+			try:
+				data = self._socket.recv(512)
+			except socket.error:
+				data = ""
 
 			if data == "" or not self.connected:
 				self.onDisconnected()
