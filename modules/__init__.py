@@ -198,7 +198,7 @@ def save_persist():
 
 # Modules
 
-def load_module(mod):
+def load_module(mod, level=logging.WARN):
 	if mod in mods:
 		logger.warn("Module %s already loaded, unloading.", mod);
 		unload_module(mod)
@@ -215,6 +215,8 @@ def load_module(mod):
 	theMod.parent_cmd = lambda n : parent_cmd_mod(mod, n)
 
 	theMod.logger = logging.getLogger("Module %s" % mod)
+	theMod.logger.setLevel(level)
+
 	theMod.cfg = config.get_section("Module/%s" % mod, True)
 
 	theMod.IrcContext = IrcContext
@@ -354,9 +356,21 @@ def load_cmd(ctx, cmd, arg, *mods):
 	"""load module <mod1> [mod2]...
 	Loads the given modules"""
 	modulesLoaded = 0
+	level = logging.WARN
 	for mod in mods:
+		if mod in ("-info","-debug","-warn","-normal"):
+			# If we are given a special directive (-info or -debug) we will load the remaining mods in
+			# The list with a logging output level of the given value.
+			if mod == "-info":
+				level = logging.INFO
+			elif mod == "-debug":
+				level = logging.DEBUG
+			elif mod == "-normal" or mod == "-warn":
+				level = logging.WARN
+			continue; # Skip the rest of the processing
+
 		try:
-			load_module(mod)
+			load_module(mod, level=level)
 			ctx.reply("Done.", "Load")
 			modulesLoaded += 1
 		except Exception, e:
