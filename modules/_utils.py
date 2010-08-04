@@ -42,7 +42,8 @@ class procThread(threading.Thread):
 				for ignore in self.ignoreList:#strip all specified chars out
 					if ignore in line and ignore is not None:
 						line.replace(ignore, '')
-				self.context.reply(line.strip(),self.procCmd[0]) #send the stripped line to IRC
+				if line != ' ' and line != None and line != '' and line != '\n':
+					self.context.reply(line.strip(),self.procCmd[0]) #send the stripped line to IRC
 			
 			
 		else:

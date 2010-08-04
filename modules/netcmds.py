@@ -36,6 +36,6 @@ def onLoad():
 		else:
 			logger.debug("Unix based system detected: %s" % os.name)
 			shellCmd = ["traceroute", address]
-			pt = _utils.procThread(shellCmd, ctx)
+			pt = _utils.procThread(shellCmd, ctx, ['*'])
 			pt.start()
 			
