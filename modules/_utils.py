@@ -26,19 +26,23 @@ def prettyTime(secs):
 class procThread(threading.Thread):
 	context = None
 	proc = None
-	procCmd = None #this is a list, the way the subprocess works is via a list of arguments so this is easiest to work with
+	procCmd = None #this is a list
+	ignoreList = None #used to strip specified characters from the return
 	
-	def __init__(self, cmd, ctx):
+	def __init__(self, cmd, ctx, ignore):
 		threading.Thread.__init__(self)
 		self.procCmd = cmd
 		self.context = ctx
+		self.ignoreList = ignore
 	
 	def run(self):
 		if self.procCmd is not None:
 			self.proc = subProc.Popen(self.procCmd, stdin=subProc.PIPE, stdout=subProc.PIPE, stderr=subProc.STDOUT)
-			for line in self.proc.stdout:
-				if line is not None and line != "\n":#ignore the new lines as they cause annoyances in IRC
-					self.context.reply(line.strip(),self.procCmd[0]) #send the stripped line to IRC
+			for line in self.proc.stdout:#cycle through the output
+				for ignore in self.ignoreList:#strip all specified chars out
+					if ignore in line and ignore is not None:
+						line.replace(ignore, '')
+				self.context.reply(line.strip(),self.procCmd[0]) #send the stripped line to IRC
 			
 			
 		else:
@@ -47,3 +51,5 @@ class procThread(threading.Thread):
 	def endProc(ctx):
 		os.kill(self.proc.pid, signal.CTRL_C_EVENT)
 		ctx.reply("Killed process", self.procCommand[0])
+	def send_input(self, line):
+			self.proc.stdin.write(ctx.)

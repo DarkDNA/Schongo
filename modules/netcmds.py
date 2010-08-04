@@ -24,7 +24,7 @@ def onLoad():
 		address = args[0]
 		shellCmd = []
 		if os.name == 'nt':
-			print 'nt system detected, using nt command'
+			logger.debug("Windows Based System Detected")
 			shellCmd = ["tracert", address]
 			process = subprocess.Popen(shellCmd, stdin=MODIFIED_subprocess.PIPE, stdout=MODIFIED_subprocess.PIPE, stderr=MODIFIED_subprocess.STDOUT)
 			output = process.communicate()
@@ -34,7 +34,7 @@ def onLoad():
 					ctx.reply(l, "TraceRoute")
 			
 		else:
-			print 'unix based system detected, using unix command'
+			logger.debug("Unix based system detected: %s" % os.name)
 			shellCmd = ["traceroute", address]
 			pt = _utils.procThread(shellCmd, ctx)
 			pt.start()
