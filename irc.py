@@ -242,6 +242,7 @@ class IrcClient(IrcSocket):
 		elif msg.command == "PRIVMSG":
 			channel = msg.args[0]
 			message = msg.args[1]
+
 			if message.startswith("\x01") and message.endswith("\x01"):
 				body = message[1:-1];
 				parts = body.split(' ', 1)
@@ -254,7 +255,8 @@ class IrcClient(IrcSocket):
 					self.onAction(channel, msg.origin, arg)
 				else:
 					self.onCtcp(channel, msg.origin, cmd, arg)
-			self.onMsg(channel, msg.origin, message)
+			else:
+				self.onMsg(channel, msg.origin, message)
 		elif msg.command == "JOIN":
 			channel = msg.args[0]
 			self.onJoin(msg.origin, channel)
