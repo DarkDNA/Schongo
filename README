@@ -96,6 +96,28 @@ Schongo Modular Bot
 	
 	- Modules by Wil Hall -
 		-> geoip.py
-		-> bitly.py
-		-> probability.py
+			Estimates geolocaton given an IP
+				commands:
+					@geoip <ip>
 
+		-> shorten.py
+			Shorten/Expand URLs using bit.ly
+				commands:
+					@shorten <long url>
+
+		-> probability.py
+			Calculates the improbability of words and sentences.
+				commands:
+					@probability <text>
+
+		-> translationparty.py
+			Translates a sentence back and forth between English and Japanese until an equillibrium is found.
+				commands:
+					@translationparty <sentence>
+
+		-> cyphertools.py
+			Adds the ability to translae text through many different cyphers.
+				commands:
+					@cypher replace <fromset> <toset> <text>
+					@cypher shift <set> <num> <text>
+					(More cyphers to come)
