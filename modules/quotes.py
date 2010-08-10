@@ -106,6 +106,10 @@ def onLoad():
 	
 		buf.append((ctx.who.nick, 'action', msg))
 
+		# Epic happy funtime buffer limiting
+		while len(buf) > 50:
+			buf.pop(0)
+
 		buffer["%s->%s" % (ctx.irc.network, ctx.chan)] = buf
 		
 	
@@ -117,5 +121,9 @@ def onLoad():
 			buf = []
 	
 		buf.append((ctx.who.nick, 'message', msg))
+
+		# Epic happy funtime buffer limiting
+		while len(buf) > 50:
+			buf.pop(0)
 
 		buffer["%s->%s" % (ctx.irc.network, ctx.chan)] = buf
