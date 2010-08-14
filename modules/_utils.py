@@ -24,35 +24,31 @@ def prettyTime(secs):
 
 	return time
 
-#Strips everything but letters and numbers from a string. If 'exceptions' is included as a string, any character in exceptions will be left as-is.
 def stripPunctuation(str, exceptions=''):
+	"""Strips everything but letters and numbers from a string. If 'exceptions' is included as a string, any character in exceptions will be left as-is."""
+
 	letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 	numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
-	exceptions = exceptions.split('').extend(letters).extend(numbers)
+	
+	exceptions = list(exceptions) + letters + numbers
+
 	nstr = ''
 	for char in str:
 		if char in exceptions:
 			nstr += char
 	return nstr
 
-#Capitalizes first letter of the string and makes the rest lower case. Does this for the first character after every space until it hits another space if atspaces is set to True.
-def casecor(str, atspaces=False):
-		if atspaces:
-			cor = ''
-			pieces = str.split(' ')
-			for piece in pieces:
-				cor += ' ' + piece[0:1].upper() + piece[1:].lower()
-			return cor[1:]
-		else:
-			   return cor[0:1].upper() + cor[1:].lower()
-
-#Properly format out a list to a string, including separating commas and 'and' before the last value if useand set to true.
 def listify(list, useand=False):
+	"""Properly format out a list to a string, including separating commas and 'and' before the last value if useand set to true."""
+
 	if len(list) == 1:
 		return list[0]
-	result = ', '.join(list)
+
 	if useand:
-		result = result[0:result.rfind(',')+2] + 'and' + result[result.rfind(',')+1:]
+		result = "%s and %s" % (', '.join(list[:-1]), list[-1])
+	else:
+		result = ', '.join(list)
+
 	return result
 
 class procThread(threading.Thread):
@@ -89,5 +85,6 @@ class procThread(threading.Thread):
 	def endProc(ctx):
 		os.kill(self.proc.pid, signal.CTRL_C_EVENT)
 		ctx.reply("Killed process", self.procCommand[0])
+
 	def send_input(self, line):
 			self.proc.stdin.write(line)
