@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # encoding=utf-8
+from __future__ import with_statement
+
 from irc import IrcClient
 import logging
 import logging.config
@@ -16,6 +18,14 @@ global connections
 connections = 0
 
 version = "0.1a"
+
+if os.path.isdir(".git"):
+	# We're running from a git tree, let's pull the revision number, shall we?
+	with open(".git/HEAD") as f:
+		ref = f.read().strip()
+		ref = ref.split(': ',1)[1]
+		with open(".git/%s" % ref) as f2:
+			version = f2.read()[:8]
 
 class SchongoClient(IrcClient):
 	def __init__(self, server, port=6667, nicks=None, ident=None, realname=None, network=None, channels=None):
