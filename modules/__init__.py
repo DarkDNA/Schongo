@@ -44,34 +44,28 @@ class IrcContext:
 		self.who = w
 	
 	def reply(self, msg, prefix=None, parse=True, splitnl=True, splitnliteral=False):
+		lines = []
+		nmsg = msg
 		if '\n' in msg or '\\n' in msg:
-			lines = []
 			if splitnliteral:
 				lines = msg.split('\\n')
+				nmsg = msg.split('\\n')
 			if splitnl:
-				if splitnliteral:
-					temp = lines
-					lines = []
-					for line in temp:
-						lines.extend(line.split('\n'))
+				if nmsg == msg:
+					nmsg = msg.split('\n')
 				else:
-					lines = msg.split('\n')
-			for line in lines:
-				if prefix is not None:
-					line ="\x02[ %s ]\x02 %s" % (prefix, line)
-				if self.chan == self.irc.nick:
-					# Private Message
-					self.say(self.who.nick, line, parse)
-				else:
-					self.say(self.chan, line, parse)
-		else:
+					nmsg = []
+					for line in lines:
+						nmsg.extend(line.split('\n'))
+
+		for line in nmsg:
 			if prefix is not None:
-				msg ="\x02[ %s ]\x02 %s" % (prefix, msg)
+				line ="\x02[ %s ]\x02 %s" % (prefix, line)
 			if self.chan == self.irc.nick:
 				# Private Message
-				self.say(self.who.nick, msg, parse)
+				self.say(self.who.nick, line, parse)
 			else:
-				self.say(self.chan, msg, parse)
+				self.say(self.chan, line, parse)
 
 	def error(self, msg):
 		self.reply(msg, "Error")

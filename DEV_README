@@ -39,6 +39,11 @@ It is not written to teach you python, just what we do with it for plugins.
 
 	There are more methods, but they are mostly for internal use.
 
+	You can create an IrcContext with the method IrcContext.fromString(string[ , ctx]) - this parses a string of the form Network->#Channel
+		* It also can parse just #channel if you pass a context to base it off of
+	
+	It *Is* Possible to make one from the constructor, but this is discuraged.
+
 
 = Modules =
 	Modules are just a collection of commands, hooks, and timers as well.
