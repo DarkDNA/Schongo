@@ -45,7 +45,7 @@ class IrcContext:
 	
 	def reply(self, msg, prefix=None, parse=True, splitnl=True, splitnliteral=False):
 		lines = []
-		nmsg = msg
+		nmsg = [ msg ]
 		if '\n' in msg or '\\n' in msg:
 			if splitnliteral:
 				lines = msg.split('\\n')
