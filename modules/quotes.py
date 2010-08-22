@@ -26,10 +26,11 @@ def onLoad():
 				return
 		except:
 			quote = ""
-			for q in quotes:
-				qnum += 1
+			qnum == -1
+			for i,q in enumerate(quotes):
 				if arg in q:
 					quote = q
+					qnum = i
 					break
 
 			if quote == "":
@@ -51,11 +52,9 @@ def onLoad():
 		global buffer
 		what = ' '.join(args)
 
-		# Multiple line quotes
-		if "," in who:
-			who = who.split(',')
-		else:
-			who = [who]
+		# Split to get the participants
+		#  If there is no instance of the seperator, it returns the string untouched
+		who = who.split(',')
 
 		# Start ... end quote
 		p = what.split(' -to ', 2)
