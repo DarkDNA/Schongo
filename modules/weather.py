@@ -16,6 +16,7 @@ def onLoad():
 	
 	@command("weather", 1,1)
 	def weather(ctx, cmd, arg, args):
+			"""Returns the current forcast for the given area should be able to take area code or city"""
 			url = weatherURL % arg
 			page = urllib2.urlopen(url)
 			xml = dom.parse(page)

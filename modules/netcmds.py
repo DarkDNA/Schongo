@@ -14,6 +14,7 @@ def onLoad():
 	
 	@command("ping", 1)
 	def ping(ctx, cmd, arg, *args):
+		"""This command runs the ping command via the command line and outputs the results into irc"""
 		address = args[0]
 		shellCmd = ["ping", "-c", "5", address]
 		pt = _utils.procThread(shellCmd, ctx, None)
@@ -21,6 +22,7 @@ def onLoad():
 		
 	@command(["traceroute", "tr", "tracert"], 1)
 	def tracert(ctx, cmd, arg, *args):
+		"""Run traceroute or tracrt depending on system. Gets the route and timing to an IP address or domain name"""
 		address = args[0]
 		shellCmd = []
 		if os.name == 'nt':

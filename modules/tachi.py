@@ -62,6 +62,7 @@ def onLoad():
 
 	@command("feed add", 2, 2)
 	def feed_add(ctx, cmd, arg, name, feed, *args):
+		"""Add a feed to monitor"""
 		if not feeds.has_key(name):
 			feeds[name] = feed
 			feedData[feed] = [name, ctx.irc.network, ctx.chan]
@@ -72,6 +73,7 @@ def onLoad():
 
 	@command("feed force", 1, 1)
 	def feed_force(ctx, cmd, arg, name, *args):
+		"""Force the specified feed to be updated"""
 		if feeds.has_key(name):
 			feed = feeds[name]
 			site = urllib2.urlopen(feed)
@@ -83,6 +85,7 @@ def onLoad():
 
 	@command("feed remove", 1, 1)
 	def feed_remove(ctx, cmd, arg, name, *args):
+		"""Remove the given feed"""
 		if feeds.has_key(name):
 			feed = feeds[name]
 			del feedData[feed]
@@ -94,6 +97,7 @@ def onLoad():
 
 	@command("feed clear", 0, 0)
 	def feed_clear(ctx, cmd, arg, *args):
+		"""Clear the monitor of all feeds"""
 		ctx.reply("Clearing Feeds", "Tachikoma")
 		feeds.clear()
 		feedData.clear()
@@ -102,6 +106,7 @@ def onLoad():
 
 	@command("feed list", 0, 0)
 	def feed_list(ctx, cmd, arg, *args):
+		"""Return a list of all stored feeds"""
 		for name in feeds:
 			feed = feeds[name]
 			ctx.reply("%s: %s" % (name, feed), "Tachikoma")
