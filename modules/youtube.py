@@ -47,6 +47,8 @@ ytOtherRegEx = re.compile("video:(.+)")
 def onLoad():
 	@command("youtube")
 	def youtube_cmd(ctx, cmd, arg):
+		"""youtube <search string>
+Searches youtube for the given search string"""
 		url = "http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=5&v=2" % urllib.quote(arg)
 		r = urllib2.urlopen(url)
 		r = dom.parse(r)

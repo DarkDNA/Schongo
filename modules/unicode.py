@@ -3,6 +3,12 @@
 
 import unicodedata
 
+__info__ = {
+	"Author": "Selig Arkin",
+	"Version": "0.1a",
+	"Dependencies": ""
+}
+
 abbrTable = {
 	"Lu": "Uppercase Letter",
 	"Ll": "Lowercase Letter",
@@ -39,7 +45,7 @@ def onLoad():
 	@command("unicode", 1, 1)
 	def unicode_cmd(ctx, cmd, arg, charOrSearch, *args):
 		"""unicode <char or search>
-Searches for information on <char> or does an exact-match search for a char called <search>"""
+Searches for information on the given char or, does an exact-match search for a char named in the args"""
 		if len(charOrSearch) == 1:
 			# Likly a search-by-glyph
 			char = charOrSearch[0]

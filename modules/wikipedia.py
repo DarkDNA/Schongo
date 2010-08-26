@@ -19,7 +19,7 @@ def onLoad():
 	@command(["wikipedia", "wiki"])
 	def wikipedia_cmd(ctx, cmd, arg):
 		"""wikipedia <search>
-Searches through wikipedia for <search>"""
+Searches through wikipedia for the given search string"""
 		o = openUrl(u"http://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=%s&srwhat=text&srlimit=5&format=xml" % urllib.quote(arg))
 
 		xml = dom.parse(o)
