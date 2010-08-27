@@ -36,8 +36,8 @@ You can load and unload modules at runtime with the commands
 # SO ( By Ross Delinger ) #
  Interface with the Stack Exchange API Current only supports stackoverflow others may follow
 
-#### `@Search through stackoverflow for the given tags` ####
-** No description given **
+#### `@so <tag1> <tag2> <etc>` ####
+Search through stackoverflow for the given tags
 
 # choose #
 Provides some random commands.
@@ -103,11 +103,11 @@ Module that wraps around ping and traceroute.
 The new and improved system uses a new threading technique to handle unix commands
 
 
-#### `@This command runs the ping command via the command line and outputs the results into irc` ####
-** No description given **
+#### `@ping <host>` ####
+This command runs the ping command via the command line and outputs the results into irc
 
-#### `@Run traceroute or tracrt depending on system. Gets the route and timing to an IP address or domain name` ####
-** No description given **
+#### `@traceroute <host>` ####
+Run traceroute or tracrt depending on system. Gets the route and timing to an IP address or domain name
 
 # probability ( By Wil Hall ) #
 Adds the 'probability' command, which calculates the number of possible word and sentence permutations, depending on word length.
@@ -148,11 +148,11 @@ Adds a interface with various SL APIs Name2Key and key2name are currently broken
 A new service will be developed when I feel like it
 
 
-#### `@Name2Key: looks up the Secondlife UUID and returns a name` ####
-** No description given **
+#### `@Name2Key <UUID>` ####
+looks up the Secondlife UUID and returns a name
 
-#### `@Retrieves the current status of the Second Life Grid` ####
-** No description given **
+#### `@slstatus` ####
+Retrieves the current status of the Second Life Grid
 
 # shorten ( By Wil Hall, Selig Arkin ) #
 Interfaces with shortening services, and expands shortened urls
@@ -172,20 +172,20 @@ It spams random blurbs and twitter posts all the time
 Its purpose here is to spit out rss feed updates
 
 
-#### `@Add a feed to monitor` ####
-** No description given **
+#### `@feed add <feed name> <feed url>` ####
+Add a feed to monitor
 
-#### `@Force the specified feed to be updated` ####
-** No description given **
+#### `@feed force <feed name>` ####
+Force the given feed to be updated
 
-#### `@Remove the given feed` ####
-** No description given **
+#### `@feed remove <feed name>` ####
+Remove the given feed
 
-#### `@Clear the monitor of all feeds` ####
-** No description given **
+#### `@feed clear` ####
+Clear the monitor of all feeds
 
-#### `@Return a list of all stored feeds` ####
-** No description given **
+#### `@feed list` ####
+Return a list of all stored feeds
 
 # test #
 Example Module to test various new features as they are added.
@@ -222,8 +222,8 @@ Searches for information on the given char or, does an exact-match search for a 
 A weather forcast module that works using the weather underground api
 
 
-#### `@Returns the current forcast for the given area should be able to take area code or city` ####
-** No description given **
+#### `@weather <city>` ####
+Returns the current forcast for the given area should be able to take area code or city
 
 # wikipedia #
 Looks up information from a MediaWiki wiki - Currently only Wikipedia
