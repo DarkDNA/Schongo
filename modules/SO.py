@@ -35,7 +35,7 @@ def jsonLoad(fp):
 def onLoad():
 	@command("so",1)
 	def search(ctx, cmd, arg, *args):
-		"""Search through stackoverflow for the given tags"""
+		"""so <tag1> <tag2> <etc>\nSearch through stackoverflow for the given tags"""
 		thingy = ";".join(args)
 
 		bunnies = 'search?tagged=%s&pagesize=5' % thingy

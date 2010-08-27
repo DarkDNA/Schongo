@@ -24,7 +24,7 @@ lastStatus = ''
 def onLoad():
 	@command(["name2key", "n2k"], 2, 2)
 	def n2k(ctx, cmd, arg, *args):
-		"""Name2Key: looks up the Secondlife UUID and returns a name"""
+		"""Name2Key <UUID>\nlooks up the Secondlife UUID and returns a name"""
 		response = urllib2.urlopen(n2kURL % urllib.quote(arg))
 		key = response.read()
 		reply = ''
@@ -37,7 +37,7 @@ def onLoad():
 		
 	@command("slstatus")
 	def statusUpdate(ctx, cmd, arg, *args):
-		"""Retrieves the current status of the Second Life Grid"""
+		"""slstatus\nRetrieves the current status of the Second Life Grid"""
 		request = urllib2.urlopen(slXMLFeed)
 		xml = dom.parse(request)
 		status = xml.getElementsByTagName('status')[0].firstChild.data
