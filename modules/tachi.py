@@ -10,7 +10,9 @@ import re
 __info__ = {
 	"Author": "Ross Delinger",
 	"Version": "1.1.1",
-	"Dependencies": []
+	"Dependencies": [
+		"_persist"
+	]
 }
 
 __persist__ = [ "feeds", "lastTitles", "feedData" ]

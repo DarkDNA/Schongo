@@ -18,7 +18,9 @@ import random
 __info__ = {
 	"Author": "Selig Arkin",
 	"Version": "0.1a",
-	"Dependencies": []
+	"Dependencies": [
+		"_persist"
+	]
 }
 
 

@@ -4,10 +4,10 @@ from __future__ import with_statement
 import sys
 import logging
 import textwrap
-import pickle
 import copy
 import time
 import threading
+from traceback import print_exc
 
 commands = {}
 hooks = {}
@@ -17,15 +17,38 @@ mods = {}
 cfg_basic = None
 config = None
 
-global persist,timers,connections
+global timers,connections
 
 connections = {}
-persist = {}
 
 timers = {}
 
 
+injected_func = {}
+injected_util_func = {}
+
 logger = logging.getLogger("Modules")
+
+logger.setLevel(logging.DEBUG)
+
+MANUAL = "_MANUAL"
+AUTO = "_AUTO"
+
+class ModuleInfo:
+	name = None
+	author = "Unknown"
+	version = "Unknown"
+	deps = [] # List of type ModuleInfo
+	depOf = [] # List of ModuleInfo
+
+	loadType = '_UNK'
+	modType = '_NONE'
+
+	def __init__(self, name):
+		self.name = name
+
+	def __str__(self):
+		return self.name
 
 class IrcContext:
 	""" Holds three important context things, and provides some helper methods for quickly replying."""
@@ -42,7 +65,9 @@ class IrcContext:
 		self.irc = i
 		self.chan = c
 		self.who = w
-	
+
+		fire_hook("context_create", self)
+
 	def reply(self, msg, prefix=None, parse=True, splitnl=True, splitnliteral=False):
 		lines = []
 		nmsg = [ msg ]
@@ -150,10 +175,8 @@ def fire_hook(hook, *args, **kw):
 
 
 def init():
-	load_persist()
-
 	for i in cfg_basic.getlist("autoload modules"):
-		load_module(i)
+		load_module(i, MANUAL)
 
 
 	timerThread.start()
@@ -166,48 +189,30 @@ def shutdown():
 
 	timerThread.stop()
 
-	save_persist()
-
-# Persistance
-
-def load_persist():
-	global persist
-	try:
-		f = file("data/mod_persist.pickle", "rb")
-		persist = pickle.load(f)
-		f.close()
-		logger.info("Persist loaded: %s", persist)
-	except:
-		logger.warn("Failed to load persist data")
-		pass
-
-def save_persist():
-	global persist
-	logger.info("Saving persist: %s", persist)
-	f = file("data/mod_persist.pickle", "wb")
-	pickle.dump(persist, f)
-	f.flush()
-	f.close()
-	logger.info("Done.")
-
 # Modules
 
-def load_module(mod, level=logging.WARN):
+def load_module(mod, loadType, level=logging.WARN):
 	if mod in mods:
-		logger.warn("Module %s already loaded, unloading.", mod);
+		logger.info("Module %s already loaded, unloading.", mod);
 		unload_module(mod)
+	
+	# Initiate a ModuleInfo class to store the data of the module
+
+	modInfo = ModuleInfo(mod)
+	modInfo.loadType = loadType
 	
 	# Begin ze actual loadink!
 	
 	theMod = __import__(mod, globals(), locals(), [], -1)
+	modInfo.module = theMod
 
 	theMod.handle_command = handle_command
 
-	theMod.command = lambda *a, **kw : command_mod(mod, *a, **kw)
-	theMod.hook = lambda h : hook_mod(mod, h)
-	theMod.timer = lambda *a, **kw : timer_mod(mod, *a, **kw)
-	theMod.parent_cmd = lambda n : parent_cmd_mod(mod, n)
-
+	for m in injected_func:
+		for cmd in injected_func[m]:
+			func = injected_func[m][cmd]
+			setattr(theMod, cmd, func)
+	
 	theMod.logger = logging.getLogger("Module %s" % mod)
 	theMod.logger.setLevel(level)
 
@@ -215,104 +220,167 @@ def load_module(mod, level=logging.WARN):
 
 	theMod.IrcContext = IrcContext
 
-	if hasattr(theMod, "__persist__"):
-		global persist
-		if mod in persist:
-			for i in theMod.__persist__:
-				if i in persist[mod]:
-					setattr(theMod, i, persist[mod][i]) # This could certanly be cleaner.
+	if mod[0] == "_":
+		# This is a special "Utility" module
+		# It gets some additional injected data, to better utilise itself
+		for m in injected_util_func:
+			for cmd in injected_util_func[m]:
+				func = injected_util_func[m][cmd]
+				setattr(theMod, cmd, func)
+
+		theMod.command = None # Command is illegal inside helper modules
+		modInfo.modType = '_UTIL'
+	else:
+		modInfo.modType = '_NORM'
+
+	if hasattr(theMod, "__info__"):
+		# __info__ should contain some additional meta information we may be interested in.
+
+		if "Author" in theMod.__info__:
+			modInfo.author = theMod.__info__["Author"]
+		else:
+			modInfo.author = "Unknown"
+
+		if "Version" in theMod.__info__:
+			modInfo.version = theMod.__info__["Version"]
+		else:
+			modInfo.version = "Unknown"
+
+		modInfo.deps = []
+		if "Dependencies" in theMod.__info__:
+			logger.info("Dependencies for module %s: %s", mod, theMod.__info__["Dependencies"])
+			for m in theMod.__info__["Dependencies"]:
+				if m not in mods:
+					subModule = load_module(m, AUTO)
+				else:
+					subModule = mods[m]
+
+				logger.debug("modInfo: %s subModule: %s", modInfo, subModule)
+
+				modInfo.deps += [ subModule ]
+				subModule.depOf += [ modInfo ]
 
 	# Used to give more decorators for other advanced functionality. :)
 	#   Say, @variable
-	fire_hook("module_preload", mod, theMod)
+	fire_hook("module_preload", modInfo)
 	
 	if hasattr(theMod, "onLoad"):
 		theMod.onLoad()
 		
-	mods[mod] = theMod
-	fire_hook("module_load", mod, theMod);
+	mods[mod] = modInfo
+	fire_hook("module_load", modInfo);
+
+	return modInfo
 	
-def unload_module(mod):
+def unload_module(mod, autoUnloading=False):
 	if mod not in mods:
 		return False
 	
 	# Clean up!
+
+	propName = "modules.%s" % mod
 	
 	for hook in hooks:
-		if mod in hooks[hook]:
-			del hooks[hook][mod]
+		if propName in hooks[hook]:
+			del hooks[hook][propName]
 
 	global timers
-	if mod in timers:
-		del timers[mod]
+	if propName in timers:
+		del timers[propName]
 	
 	toDel = []
 	
+	
 	for cmd in commands:
-		if commands[cmd]._mod == mod:
+		if commands[cmd].__module__ == propName:
 			toDel.append(cmd)
 	
 	for cmd in toDel:
 		del commands[cmd]
 	
-	fire_hook("module_unload", mod)
+	if propName in injected_func:
+		del injected_func[propName] 
+	if propName in injected_util_func:
+		del injected_util_func[propName] 
 	
-	theMod = mods[mod]
+	
+	modInfo = mods[mod]
+
+	depOn = modInfo.depOf
+	for depMod in depOn:
+		if depMod.name == mod:
+			# I have NO CLUE how this happens, but let's handle it for sanity
+			continue
+		logger.debug("unloading dependent module %s", depMod)
+		unload_module(depMod.name, True)
+
+
+	fire_hook("module_unload", modInfo)
+
+	theMod = modInfo.module
 
 	if hasattr(theMod, "onUnload"):
 		theMod.onUnload()
 
+	fire_hook("module_postunload", modInfo)
 
-	try:
-		if hasattr(theMod, "__persist__"):
-			global persist
-			persist[mod] = {}
-			for i in theMod.__persist__:
-				persist[mod][i] = getattr(theMod, i)
 
-	except AttributeError, e:
-		logger.warn("Error persisting data for module %s: %s", mod, e)
-		pass
+	# Update and possible remove our dependencies.
+
+	for depMod in modInfo.deps:
+		newDeps = []
+		for i in depMod.depOf:
+			if i.name != mod:
+				newDeps += [ i ]
+		depMod.depOf = newDeps
+		if len(newDeps) == 0 and depMod.loadType == AUTO and not autoUnloading:
+			logger.info("Unloading unused module %s", depMod)
+			unload_module(depMod.name) # Unload an automatically-loaded module
 	
+
 	del mods[mod]
 	del sys.modules['modules.%s' % mod]
 
 # Timers
 
-def timer_start(mod, timer, args, kwargs):
+def timer_start(timer, args, kwargs):
 	timer._args = args
 	timer._kwargs = kwargs
 	timer._curtime = timer._time
 
-def timer_cancel(mod, timer):
+def timer_cancel(timer):
 	timer._curtime = -1
 
 # Decorators
 
-def command_mod(mod, name, min=-1, max=-1):
+def injected(func):
+	if func.__module__ not in injected_func:
+		injected_func[func.__module__] = {}
+
+	injected_func[func.__module__][func.__name__] = func
+	return func
+
+@injected
+def command(name, min=-1, max=-1):
 	def retCmd(f):
 		if(isinstance(name,list)):
 			for n in name:
 				commands[n] = f
 		else:
 			commands[name] = f
-		f._mod = mod
+
 		f._min = min
 		f._max = max		
 		return f
 	return retCmd
 
-def hook_mod(mod, hook):
-	def retHook(f):
-		if hook not in hooks:
-			hooks[hook] = {}
-		hooks[hook][mod] = f
-		return f
-	return retHook
-
-def timer_mod(mod, time, repeats=False):
+@injected
+def timer(name, delay):
 	def retTimer(f):
 		global timers
+
+		mod = f.__module__
+
 		if mod not in timers:
 			timers[mod] = []
 
@@ -322,23 +390,40 @@ def timer_mod(mod, time, repeats=False):
 		f._repeats = repeats
 		f._curtime = -1
 
-		f.start = lambda *a, **kw : timer_start(mod, f, a, kw)
-		f.cancel = lambda : timer_cancel(mod, f)
+		f.start = lambda *a, **kw : timer_start(f, a, kw)
+		f.cancel = lambda : timer_cancel(f)
+
+
+@injected
+def hook(hook):
+	def retHook(f):
+		mod = f.__module__
+
+		if hook not in hooks:
+			hooks[hook] = {}
+
+		hooks[hook][mod] = f
 		return f
-	return retTimer
+	return retHook
 
-
-def parent_cmd_mod(mod, name):
-	@command_mod(mod, name)
+@injected
+def parent_cmd(name):
+	### TODO: Fix this so it assigns the proper __module__ value to the command - atm it will belong to __init__
+	@command(name)
 	def parentCmd(ctx, cmd, arg):
 		if not handle_command(ctx, arg, cmd):
 			ctx.error("No such sub-command")
 
-# Helpers
+### Utility injected code
 
-command = lambda *a, **kw : command_mod("__init__", *a, **kw)
-hook = lambda h : hook_mod("__init__", h)
-parent_cmd = lambda n : parent_cmd_mod("__init__", n)
+def injected_util(func):
+	if func.__module__ not in injected_util_func:
+		injected_util_func[func.__module__] = {}
+
+	injected_util_func[func.__module__][func.__name__] = func
+	return func
+
+injected_util(injected)
 
 # Core Code
 
@@ -364,10 +449,11 @@ def load_cmd(ctx, cmd, arg, *mods):
 			continue; # Skip the rest of the processing
 
 		try:
-			load_module(mod, level=level)
+			load_module(mod, MANUAL, level=level)
 			ctx.reply("Done.", "Load")
 			modulesLoaded += 1
 		except Exception, e:
+			print_exc(e)
 			ctx.reply("Error loading %s: %s" % (mod,e), "Load")
 	if modulesLoaded > 0:
 		if modulesLoaded == 1:
@@ -400,26 +486,17 @@ parent_cmd("info")
 def info_mod_cmd(ctx, cmd, arg, m, *args):
 	"""info module <module>
 Retrieves additional information about the module"""
-	ctx.reply("Information available for module %s:" % args[0])
+	ctx.reply("Information available for module %s:" % m)
 	try:
 		mod = mods[m]
-		if hasattr(mod, "__doc__"):
-			doc = mod.__doc__.split("\n")
-			if doc[0] == "":
-				doc = doc[1]
-			else:
-				doc = doc[0]
-		else:
-			doc = "*** This module doesn't provide a doc string, yell at the author."
 
-		ctx.reply("%s" % doc, m, False)
-		try:
-			info = mod.__info__
-			ctx.reply("Author: %s" % info['Author'], m, False)
-			ctx.reply("Version: %s" % info['Version'], m, False)
-		except AttributeError:
-			ctx.reply("Additional information not available")
+		ctx.reply("Author: %s" % mod.author, m)
+		ctx.reply("Version: %s" % mod.version, m)
+		ctx.reply("Depends on: %s" % ', '.join([ str(x) for x in mod.deps ]), m)
+		ctx.reply("Depended on by: %s" % ', '.join([ str(x) for x in mod.depOf ]), m)
 
+		#ctx.reply("Desc: %s" % mod.desc, m)
+	
 	except KeyError:
 		ctx.reply("[[ Information not available as module is not loaded. ]]")
 

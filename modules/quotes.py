@@ -11,6 +11,15 @@ global buffer
 buffer = {}
 quotes = []
 
+
+__info__ = {
+	"Author": "Selig Arkin",
+	"Version": "0.1",
+	"Dependencies": [
+		"_persist"
+	]
+}
+
 __persist__ = ["quotes"]
 
 def onLoad():	
