@@ -17,7 +17,7 @@ class IrcOrigin:
 		
 	def __str__(self):
 		return "%s!%s@%s" % (self.nick, self.ident, self.host)
-		
+
 class IrcMessage:
 	"""Holds the meta info for an IRC Message"""
 	origin = None
@@ -222,6 +222,9 @@ class IrcClient(IrcSocket):
 	
 	def onTopic(self, who, chan, topic):
 		pass
+
+	def onMode(self, who, chan, modes, values):
+		pass
 		
 	
 	# IRC Events
@@ -274,5 +277,10 @@ class IrcClient(IrcSocket):
 			channel = msg.args[0]
 			topic = msg.args[1]
 			self.onTopic(msg.origin,channel,topic)	
+		elif msg.command == "MODE":
+			channel = msg.args[0]
+			modes = msg.args[1]
+			values = msgs.args[2:]
+			self.onMode(msg.origin, channel, modes, values)
 		else:
 			IrcSocket.onMessage(self, msg)
