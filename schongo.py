@@ -71,7 +71,7 @@ class SchongoClient(IrcClient):
 		if connections == 0:
 			self.logger.info("Shutting down.")
 			modules.shutdown()
-	
+
 	# Overrides IrcClient
 	def onMsg(self, chan, who, what):
 		modules.fire_hook("message", modules.IrcContext(self, chan, who), what)
@@ -104,11 +104,20 @@ class SchongoClient(IrcClient):
 		modules.fire_hook("topic", modules.IrcContext(self,chan,who),topic)
 	# Overrides IrcClient
 	def onNick(self, old, new):
-		modules.fire_hook("nick", old, new)
+		modules.fire_hook("nick", modules.IrcContext(self, None, old), new)
 
 	# Overrides IrcClient
 	def onMode(self, who, chan, mode, args):
 		modules.fire_hook("mode", modules.IrcContext(self, chan, who), mode, args)
+
+	# Overrides IrcClient
+	def onMessage(self, msg):
+		# Call the parent so we still function.
+		IrcClient.onMessage(self, msg)
+		# Fire off an event for modules to eat
+		modules.fire_hook("irc_%s" % msg.command, 
+				modules.IrcContext(self, None, msg.origin),
+				msg)
 	
 def main(argv):
 	opts, args = getopt.getopt(argv, "v:c", [ "debug", "config=" ])

@@ -26,6 +26,17 @@ def onLoad():
 	def crash_cmd(ctx, cmd, arg):
 		None.dicks()
 
+	@command("test userinfo")
+	def userinfo_cmd(ctx, cmd, arg):
+		ctx.reply(get_user_info(ctx, arg).HostName)
+
+	@command("test chaninfo")
+	def chaninfo_cmd(ctx, cmd, arg):
+		chan = get_channel_info(ctx, arg)
+
+		ctx.reply("Users: %s" % ', '.join(chan.Users))
+		ctx.reply("Topic: %s" % chan.Topic)
+
 	@command("test say", 2)
 	def say_cmd(ctx, cmd, arg, *args):
 		where, what = arg.split(' ', 1)

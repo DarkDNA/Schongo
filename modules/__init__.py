@@ -66,6 +66,12 @@ class IrcContext:
 		self.chan = c
 		self.who = w
 
+		self.isPrivate = (self.chan == self.irc.nick)
+		if self.who:
+			self.isUs = (self.irc.nick == self.who.nick)
+		else:
+			self.isUs = False
+
 		fire_hook("context_create", self)
 
 	def reply(self, msg, prefix=None, parse=True, splitnl=True, splitnliteral=False):
@@ -175,10 +181,11 @@ def fire_hook(hook, *args, **kw):
 
 
 def init():
+	load_module("_tracking", MANUAL)
+
 	for i in cfg_basic.getlist("autoload modules"):
 		load_module(i, MANUAL)
-
-
+	
 	timerThread.start()
 
 
@@ -387,11 +394,12 @@ def timer(name, delay):
 		timers[mod].append(f)
 
 		f._time = time
-		f._repeats = repeats
+		f._repeats = delay
 		f._curtime = -1
 
-		f.start = lambda *a, **kw : timer_start(f, a, kw)
+		f.start = lambda *a, **kw : timer_start(f, *a, **kw)
 		f.cancel = lambda : timer_cancel(f)
+	return retTimer
 
 
 @injected
@@ -424,6 +432,7 @@ def injected_util(func):
 	return func
 
 injected_util(injected)
+injected_util(fire_hook)
 
 # Core Code
 

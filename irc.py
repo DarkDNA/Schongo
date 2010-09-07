@@ -273,14 +273,18 @@ class IrcClient(IrcSocket):
 		elif msg.command == "001":
 			# We've successfuly connected, partay!
 			self.onConnected()
-		elif msg.command == "TOPIC":#added by teh leet Posiden!
+		elif msg.command == "TOPIC":
 			channel = msg.args[0]
 			topic = msg.args[1]
-			self.onTopic(msg.origin,channel,topic)	
+			self.onTopic(msg.origin,channel,topic)
+		elif msg.command == "332":
+			channel = msg.args[1]
+			topic = msg.args[2]
+			self.onTopic(None, channel, topic)
 		elif msg.command == "MODE":
 			channel = msg.args[0]
 			modes = msg.args[1]
-			values = msgs.args[2:]
+			values = msg.args[2:]
 			self.onMode(msg.origin, channel, modes, values)
 		else:
 			IrcSocket.onMessage(self, msg)
