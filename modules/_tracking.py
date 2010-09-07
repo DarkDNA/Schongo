@@ -37,6 +37,13 @@ class ChannelInfo:
 	HalfOps = []
 	Voiced  = []
 
+	def __init__(self):
+		self.Users = []
+		self.Topic = ""
+	
+	def __str__(self):
+		return "[[ ChannelInfo - Users: %s - Topic: %s ]]" % (self.Users, self.Topic)
+
 class UserInfo:
 	Channels = []
 	RealName = ""
@@ -45,19 +52,36 @@ class UserInfo:
 	Ident = ""
 	HostName = ""
 
+	def __init__(self):
+		self.Channels = []
+		self.RealName = ""
+		self.Server = ""
+		self.ServerHops = 0
+		self.Ident = ""
+		self.HostName = ""
+
+	def __str__(self):
+		return "[[ UserInfo - Channels: %s %s@%s on server %s ]]" % ( 
+				self.Channels,
+				self.Ident,
+				self.HostName,
+				self.Server )
+
+
 def onLoad():
 	@hook("join")
 	def join_hook(ctx):
 		global trackingData
 
-		if ctx.isUs: # True if this is an event directed at us.
+		if ctx.isUs: # True if this is an event caused by us.
 			trackingData[ctx.irc.network][ctx.chan] = ChannelInfo()
 			ctx.irc.sendMessage("WHO", ctx.chan)
 
 
 		networkData = trackingData[ctx.irc.network]
 
-		networkData[ctx.chan].Users.append(ctx.who.nick)
+		if ctx.who.nick not in networkData[ctx.chan].Users:
+			networkData[ctx.chan].Users.append(ctx.who.nick)
 
 		if ctx.who.nick not in networkData:
 			networkData[ctx.who.nick] = UserInfo()
@@ -70,6 +94,8 @@ def onLoad():
 
 	@hook("part")
 	def part_hook(ctx):
+		global trackingData
+
 		if ctx.isUs:
 			del trackingData[ctx.irc.network][ctx.chan]
 			return
@@ -103,18 +129,14 @@ def onLoad():
 	@hook("irc_352")
 	def irc_352_hook(ctx, msg):
 		global trackingData
+
 		ctx.chan = msg.args[1]
 		whoNick = msg.args[5]
-
-		print ctx.chan
 
 		networkData = trackingData[ctx.irc.network]
 
 		if whoNick not in networkData:
 			networkData[whoNick] = UserInfo()
-
-
-		print ctx.chan
 
 		whoData = networkData[whoNick]
 		chanData = networkData[ctx.chan]
@@ -122,14 +144,15 @@ def onLoad():
 		if ctx.chan not in whoData.Channels:
 			whoData.Channels += [ ctx.chan ]
 
+		if whoNick not in chanData.Users:
+			chanData.Users.append(whoNick)
+
 		whoData.HostName = msg.args[3]
 		whoData.Server = msg.args[4]
 		hops, realName  = msg.args[7].split(" ", 1)
 		whoData.RealName = realName
 		whoData.ServerHops = hops
 
-		if whoNick not in chanData.Users:
-			chanData.Users.append(whoNick)
 
 	@hook("context_create")
 	def context_create_hook(ctx):
