@@ -17,11 +17,10 @@ mods = {}
 cfg_basic = None
 config = None
 
-global timers,connections
+global connections
 
 connections = {}
 
-timers = {}
 
 
 injected_func = {}
@@ -45,10 +44,12 @@ class ModuleInfo:
 	modType = '_NONE'
 
 	def __init__(self, name):
+		self.deps = []
+		self.depOf = []
 		self.name = name
 
 	def __str__(self):
-		return self.name
+		return "[[ Module %s (Version %s) Written by %s ]]" % (self.name, self.version, self.author)
 
 class IrcContext:
 	""" Holds three important context things, and provides some helper methods for quickly replying."""
@@ -67,6 +68,7 @@ class IrcContext:
 		self.who = w
 
 		self.isPrivate = (self.chan == self.irc.nick)
+
 		if self.who:
 			self.isUs = (self.irc.nick == self.who.nick)
 		else:
@@ -138,34 +140,6 @@ class IrcContext:
 		return IrcContext(net, chan, None)
 
 
-class TimerThread(threading.Thread):
-	def __init__(self):
-		threading.Thread.__init__(self, name="Timer Thread")
-	
-	def run(self):
-		global timers
-		self.run = True
-		while self.run:
-			for mod in timers:
-				for timer in timers[mod]:
-					if timer._curtime == 0:
-						try:
-							timer(*timer._args, **timer._kwargs)
-						except:
-							logger.exception("Error while running timer from module %s", mod)
-
-						if timer._repeats:
-							timer._curtime = timer._time
-						else:
-							timer._curtime = -1
-					elif timer._curtime > 0:
-						timer._curtime -= 1
-			time.sleep(1)
-
-	def stop(self):
-		self.run = False
-
-timerThread = TimerThread()
 
 # Methods
 		
@@ -186,15 +160,11 @@ def init():
 	for i in cfg_basic.getlist("autoload modules"):
 		load_module(i, MANUAL)
 	
-	timerThread.start()
-
 
 def shutdown():
 	unloadables = mods.keys()
 	for i in unloadables:
 		unload_module(i)
-
-	timerThread.stop()
 
 # Modules
 
@@ -213,32 +183,6 @@ def load_module(mod, loadType, level=logging.WARN):
 	theMod = __import__(mod, globals(), locals(), [], -1)
 	modInfo.module = theMod
 
-	theMod.handle_command = handle_command
-
-	for m in injected_func:
-		for cmd in injected_func[m]:
-			func = injected_func[m][cmd]
-			setattr(theMod, cmd, func)
-	
-	theMod.logger = logging.getLogger("Module %s" % mod)
-	theMod.logger.setLevel(level)
-
-	theMod.cfg = config.get_section("Module/%s" % mod, True)
-
-	theMod.IrcContext = IrcContext
-
-	if mod[0] == "_":
-		# This is a special "Utility" module
-		# It gets some additional injected data, to better utilise itself
-		for m in injected_util_func:
-			for cmd in injected_util_func[m]:
-				func = injected_util_func[m][cmd]
-				setattr(theMod, cmd, func)
-
-		theMod.command = None # Command is illegal inside helper modules
-		modInfo.modType = '_UTIL'
-	else:
-		modInfo.modType = '_NORM'
 
 	if hasattr(theMod, "__info__"):
 		# __info__ should contain some additional meta information we may be interested in.
@@ -267,6 +211,37 @@ def load_module(mod, loadType, level=logging.WARN):
 				modInfo.deps += [ subModule ]
 				subModule.depOf += [ modInfo ]
 
+
+
+
+	theMod.handle_command = handle_command
+
+	for m in injected_func:
+		for cmd in injected_func[m]:
+			func = injected_func[m][cmd]
+			setattr(theMod, cmd, func)
+	
+	theMod.logger = logging.getLogger("Module %s" % mod)
+	theMod.logger.setLevel(level)
+
+	theMod.cfg = config.get_section("Module/%s" % mod, True)
+
+	theMod.IrcContext = IrcContext
+
+	if mod[0] == "_":
+		# This is a special "Utility" module
+		# It gets some additional injected data, to better utilise itself
+		for m in injected_util_func:
+			for cmd in injected_util_func[m]:
+				func = injected_util_func[m][cmd]
+				setattr(theMod, cmd, func)
+
+		theMod.command = None # Command is illegal inside helper modules
+		modInfo.modType = '_UTIL'
+	else:
+		modInfo.modType = '_NORM'
+
+
 	# Used to give more decorators for other advanced functionality. :)
 	#   Say, @variable
 	fire_hook("module_preload", modInfo)
@@ -281,6 +256,8 @@ def load_module(mod, loadType, level=logging.WARN):
 	
 def unload_module(mod, autoUnloading=False):
 	if mod not in mods:
+		if "modules.%s" % mod in sys.modules:
+			del sys.modules['modules.%s' % mod] # Make sure it's removed from the system modules table.
 		return False
 	
 	# Clean up!
@@ -291,10 +268,6 @@ def unload_module(mod, autoUnloading=False):
 		if propName in hooks[hook]:
 			del hooks[hook][propName]
 
-	global timers
-	if propName in timers:
-		del timers[propName]
-	
 	toDel = []
 	
 	
@@ -317,6 +290,7 @@ def unload_module(mod, autoUnloading=False):
 	for depMod in depOn:
 		if depMod.name == mod:
 			# I have NO CLUE how this happens, but let's handle it for sanity
+			logger.warn("Module is dependency of itself, wtf?")
 			continue
 		logger.debug("unloading dependent module %s", depMod)
 		unload_module(depMod.name, True)
@@ -350,13 +324,6 @@ def unload_module(mod, autoUnloading=False):
 
 # Timers
 
-def timer_start(timer, args, kwargs):
-	timer._args = args
-	timer._kwargs = kwargs
-	timer._curtime = timer._time
-
-def timer_cancel(timer):
-	timer._curtime = -1
 
 # Decorators
 
@@ -380,27 +347,6 @@ def command(name, min=-1, max=-1):
 		f._max = max		
 		return f
 	return retCmd
-
-@injected
-def timer(name, delay):
-	def retTimer(f):
-		global timers
-
-		mod = f.__module__
-
-		if mod not in timers:
-			timers[mod] = []
-
-		timers[mod].append(f)
-
-		f._time = time
-		f._repeats = delay
-		f._curtime = -1
-
-		f.start = lambda *a, **kw : timer_start(f, *a, **kw)
-		f.cancel = lambda : timer_cancel(f)
-	return retTimer
-
 
 @injected
 def hook(hook):
@@ -501,8 +447,8 @@ Retrieves additional information about the module"""
 
 		ctx.reply("Author: %s" % mod.author, m)
 		ctx.reply("Version: %s" % mod.version, m)
-		ctx.reply("Depends on: %s" % ', '.join([ str(x) for x in mod.deps ]), m)
-		ctx.reply("Depended on by: %s" % ', '.join([ str(x) for x in mod.depOf ]), m)
+		ctx.reply("Depends on: %s" % ', '.join([ x.name for x in mod.deps ]), m)
+		ctx.reply("Depended on by: %s" % ', '.join([ x.name for x in mod.depOf ]), m)
 
 		#ctx.reply("Desc: %s" % mod.desc, m)
 	

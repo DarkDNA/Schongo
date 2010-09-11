@@ -3,11 +3,20 @@
 Feel free to add to them!
 """
 
+__info__ = {
+	"Author": "Various",
+	"Version": "Cake",
+	"Dependencies": [
+		"_timer"
+	]
+}
+
 def onLoad():
 
 	@timer(15, True)
 	def bacon_timer(ctx):
 		ctx.reply("Meow!")
+		return True
 
 	parent_cmd("test")
 	parent_cmd("test timer")
@@ -54,7 +63,6 @@ def onLoad():
 	
 	@hook("topic")
 	def topic_hook(ctx, topic):
-		nick = ctx.who.__str__().split('!')[0]
-		ctx.reply("%s is a topic changin bitch!" % nick, "Topic Alarm")
+		ctx.reply("%s is a topic changin bitch!" % ctx.who.nick, "Topic Alarm")
 	
 	
