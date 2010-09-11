@@ -18,6 +18,10 @@ def onLoad():
 		ctx.reply("Meow!")
 		return True
 
+	@timer(5)
+	def delay_say_timer(ctx, msg):
+		ctx.reply(msg)
+
 	parent_cmd("test")
 	parent_cmd("test timer")
 
@@ -30,6 +34,10 @@ def onLoad():
 	def catnip_cmd(ctx, cmd, arg):
 		ctx.reply("Ohh. *nom*")
 		bacon_timer.cancel()
+
+	@command("test timer delay")
+	def delay_cmd(ctx, cmd, arg):
+		delay_say_timer.start(ctx, arg)
 
 	@command("test crash")
 	def crash_cmd(ctx, cmd, arg):

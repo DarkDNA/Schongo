@@ -64,6 +64,8 @@ class TimerThread(Thread):
 						except:
 							self.logger.exception("Error running timer %s", timerInfo)
 
+						timerInfo.countdown = -1
+
 					elif timerInfo.countdown > 0:
 						timerInfo.countdown -= 1
 					else: # Countdown < 0 -- Delete
@@ -105,7 +107,7 @@ def onLoad():
 	timerThread.start()
 
 	@injected
-	def timer(time, singleton):
+	def timer(time, singleton=False):
 		def timerFunc(func):
 			global timers
 
