@@ -18,7 +18,7 @@ def onLoad():
 		ctx.reply("Meow!")
 		return True
 
-	@timer(5)
+	@timer(1)
 	def delay_say_timer(ctx, msg):
 		ctx.reply(msg)
 
@@ -37,7 +37,10 @@ def onLoad():
 
 	@command("test timer delay")
 	def delay_cmd(ctx, cmd, arg):
-		delay_say_timer.start(ctx, arg)
+		parts = arg.split(' ', 1)
+		time = int(parts[0])
+		ti = delay_say_timer.start(ctx, parts[1])
+		ti.delay(time - 1)
 
 	@command("test crash")
 	def crash_cmd(ctx, cmd, arg):

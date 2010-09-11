@@ -43,6 +43,12 @@ class TimerInformation:
 		self.countdown = -1
 		self.function._num_running -= 1
 
+	def delay(self, time):
+		self.countdown += time
+
+	def reset(self):
+		self.countdown = self.time
+
 class TimerThread(Thread):
 	def __init__(self):
 		Thread.__init__(self, name="Timer Thread")
@@ -84,7 +90,7 @@ def timer_start(timer, a, kw):
 	global timers
 
 	if timer._singleton and timer._num_running > 0:
-		return # Timer is already running, and a singleton
+		return timer._single_info # Timer is already running, and a singleton, so return the singleton's TimerInformation Instance
 
 	logger.debug("Starting timer %s", timer.__name__)
 
@@ -92,11 +98,38 @@ def timer_start(timer, a, kw):
 
 	timer._num_running += 1
 
+	if timer._singleton:
+		timer._single_info = ti
+
 	timers[timer.__module__].append(ti)
 
 	logger.debug(timers)
 
 	return ti
+
+def timer_cancel(timer):
+	if not timer._singleton:
+		return # Not a singleton, invalid function
+
+	if timer._single_info is not None:
+		timer._single_info.cancel()
+		timer._single_info = None
+
+
+def timer_delay(timer, time):
+	if not timer._singleton:
+		return
+
+	if timer._single_info is not None:
+		timer._single_info.delay(time)
+
+def timer_reset(timer):
+	if not timer._singleton:
+		return
+
+	if timer._single_info is not None:
+		timer._single_info.reset()
+	
 
 def onLoad():
 
@@ -121,8 +154,15 @@ def onLoad():
 			func._singleton = singleton
 			func._num_running = 0
 
+			if func._singleton:
+				# Wrap some TimerInformation functions to the object, since it is a singleton
+				func.cancel = lambda : timer_cancel(func)
+				func.delay = lambda time : timer_delay(func, time)
+				func.reset = lambda : timer_reset(func)
+				# And create the var for future use
+				func._single_info = None
+
 			func.start = lambda *a, **kw : timer_start(func, a, kw)
-			func.cancel = lambda : timer_cancel(func)
 			func.running = lambda : func._num_running
 
 			return func
@@ -139,4 +179,3 @@ def onUnload():
 	global timerThread
 
 	timerThread.stop()
-
