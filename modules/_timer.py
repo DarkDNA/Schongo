@@ -3,10 +3,12 @@
 
 from threading import Thread
 import time
+import logging
 
-global timers
+global timers,timerThread
 
 timers = {}
+timerThread = None
 
 class TimerInformation:
 	function = None
@@ -23,10 +25,15 @@ class TimerInformation:
 		self.function = function
 		self.singleton = singleton
 		self.time = self.function._time
+		self.countdown = self.time
+
+	def __str__(self):
+		return "[[ Timer %s of %s ]]" % (self.function.__name__, self.function.__module__)
 
 	def run(self):
 		if self.function(*self.args, **self.kwargs):
 			self.countdown = self.time
+
 		self.function._num_running -= 1
 
 	def __call__(self, *a, **kw):
@@ -39,34 +46,34 @@ class TimerInformation:
 class TimerThread(Thread):
 	def __init__(self):
 		Thread.__init__(self, name="Timer Thread")
-	
+		self.logger = logger
+
 	def run(self):
-		global timers
+
 		self.run = True
 
 		while self.run:
+			global timers
+			
 			for mod in timers:
-				newTimers = []
+				toDel = []
 				for timerInfo in timers[mod]:
 					if timerInfo.countdown == 0:
-						timerInfo.run()
-						timerInfo.countdown = -1
-						newTimers.append(timerInfo)
-						logger.debug("Running timer %s", timerInfo.function.__name__)
-					elif timerInfo.countdown < 0:
-						if timerInfo.singleton:
-							newTimers.append(timerInfo)
-						else:
-							logger.debug("Droping timer %s", timerInfo.function.__name__)
-					else:
+						try:
+							timerInfo.run()
+						except:
+							self.logger.exception("Error running timer %s", timerInfo)
+
+					elif timerInfo.countdown > 0:
 						timerInfo.countdown -= 1
-						logger.debug("Timer: %s time: %d", timerInfo.function.__name__, timerInfo.countdown)
-						newTimers.append(timerInfo)
+					else: # Countdown < 0 -- Delete
+						toDel.append(timerInfo)
 
+				for delMe in toDel:
+					timers[mod].remove(delMe)
 
-				timers[mod] = newTimers
 			time.sleep(1)
-		logger.debug("Timer thread stoping.")
+		self.logger.debug("Timer thread stoping.")
 
 	def stop(self):
 		self.run = False
@@ -84,12 +91,14 @@ def timer_start(timer, a, kw):
 	timer._num_running += 1
 
 	timers[timer.__module__].append(ti)
+
+	logger.debug(timers)
+
 	return ti
 
 def onLoad():
 
 	global timerThread
-	
 	logger.debug("Starting Timer thread.")
 
 	timerThread = TimerThread()
@@ -126,5 +135,6 @@ def onLoad():
 
 def onUnload():
 	global timerThread
+
 	timerThread.stop()
 
