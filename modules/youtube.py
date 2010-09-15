@@ -1,9 +1,5 @@
 # coding=utf-8
-
-
 """Implements various commands to interact with YouTube, and a meta information grabber"""
-
-
 
 import urllib2
 import urllib
@@ -49,14 +45,14 @@ def onLoad():
 	def youtube_cmd(ctx, cmd, arg):
 		"""youtube <search string>
 Searches youtube for the given search string"""
-		url = "http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=5&v=2" % urllib.quote(arg)
+		url = "http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=3&v=2" % urllib.quote(arg)
 		r = urllib2.urlopen(url)
 		r = dom.parse(r)
 			
 		results = int(r.getElementsByTagName("openSearch:totalResults")[0].firstChild.data)
 
 		if results > 0:
-			res = min(results, 5)
+			res = min(results, 3)
 			ctx.reply("Results 1-%d out of %s" % (res, prettyNumber(results)), "YouTube")
 		else:
 			ctx.reply("No results found for %s" % arg, "YouTube")

@@ -38,7 +38,7 @@ def onLoad():
 		"""so <tag1> <tag2> <etc>\nSearch through stackoverflow for the given tags"""
 		thingy = ";".join(args)
 
-		bunnies = 'search?tagged=%s&pagesize=5' % thingy
+		bunnies = 'search?tagged=%s&pagesize=3' % thingy
 		searchURL = apiURL % bunnies
 
 		urlObject = urllib2.urlopen(searchURL)
@@ -51,7 +51,7 @@ def onLoad():
 		results = decoded["total"]
 
 		if results > 0:
-			res = min(results, 5)
+			res = min(results, 3)
 			ctx.reply("Results 1-%d of %s" % (res, prettyNumber(results)), "StackOverflow")
 		else:
 			ctx.reply("No results for your query", "StackOverflow")

@@ -20,14 +20,14 @@ def onLoad():
 	def wikipedia_cmd(ctx, cmd, arg):
 		"""wikipedia <search>
 Searches through wikipedia for the given search string"""
-		o = openUrl(u"http://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=%s&srwhat=text&srlimit=5&format=xml" % urllib.quote(arg))
+		o = openUrl(u"http://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=%s&srwhat=text&srlimit=3&format=xml" % urllib.quote(arg))
 
 		xml = dom.parse(o)
 		
 		results = int(xml.getElementsByTagName("searchinfo")[0].getAttribute("totalhits"))
 		
 		if results > 0:
-			res = min(results, 5)
+			res = min(results, 3)
 			ctx.reply("Results 1-%d out of %s" % (res, prettyNumber(results)), "Wikipedia")
 		else:
 			ctx.reply(u"No results found for %s" % arg, "Wikipedia")
