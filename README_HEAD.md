@@ -1,5 +1,5 @@
 # Schongo Modular Bot #
-Schongo is an IRC bot designed to be as modular as possible, without becoming too dependent on any individual module.
+Schongo is an IRC bot designed to be as modular as possible, with no single module being required for core functionality (Such as talking to the IRC Server itself) -- Note that at this time it is not completely meeting this goal (_tracking is hard-loaded by the core, and can not handle being unloaded), However Selig is working hard to make this happen.
 
 Schongo is being written by:
 
