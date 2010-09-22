@@ -1,5 +1,5 @@
 # Schongo Modular Bot #
-Schongo is an IRC bot designed to be as modular as possible, without becoming too dependent on any individual module.
+Schongo is an IRC bot designed to be as modular as possible, with no single module being required for core functionality (Such as talking to the IRC Server itself) -- Note that at this time it is not completely meeting this goal (_tracking is hard-loaded by the core, and can not handle being unloaded), However Selig is working hard to make this happen.
 
 Schongo is being written by:
 
@@ -115,7 +115,7 @@ Adds the 'probability' command, which calculates the number of possible word and
 #### `@probability` ####
 ** No docstring given **
 
-# quotes #
+# quotes ( By Selig Arkin ) #
 Allows the bot to store quotes of people
 
 Adds the following commands: remember, quote
@@ -187,7 +187,7 @@ Clear the monitor of all feeds
 #### `@feed list` ####
 Return a list of all stored feeds
 
-# test #
+# test ( By Various ) #
 Example Module to test various new features as they are added.
 
 Feel free to add to them!
@@ -199,7 +199,16 @@ Feel free to add to them!
 #### `@test timer stop` ####
 ** No docstring given **
 
+#### `@test timer delay` ####
+** No docstring given **
+
 #### `@test crash` ####
+** No docstring given **
+
+#### `@test userinfo` ####
+** No docstring given **
+
+#### `@test chaninfo` ####
 ** No docstring given **
 
 #### `@test say` ####

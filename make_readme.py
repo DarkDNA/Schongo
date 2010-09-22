@@ -47,10 +47,12 @@ def hook_decorator(hook):
 def noFunc(*a, **kw):
 	pass
 
-def timer_decorator(time, repeat):
+def timer_decorator(time, singleton=False):
 	def func(func):
 		func.start = noFunc
 		func.cancel = noFunc
+		func.delay = noFunc
+		func.reset = noFunc
 		return func
 
 	return func
