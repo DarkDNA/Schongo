@@ -575,6 +575,6 @@ def command_processor(ctx, msg):
 		return
 	if msg[0] == cfg_basic.get("prefix char"):
 		handle_command(ctx, msg[1:])
-	elif msg.startswith('%s: ' % ctx.irc.nick):
+	elif msg.lower().startswith('%s: ' % ctx.irc.nick.lower()):
 		handle_command(ctx, msg[len('%s: ' % ctx.irc.nick):]);
 		
