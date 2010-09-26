@@ -47,7 +47,7 @@ def onLoad():
 		mod = modInfo.module
 		modName = modInfo.name
 		
-		if hasattr(mod, "__persist__"):
+		if modName in persist and hasattr(mod, "__persist__"):
 			for i in mod.__persist__:
 				if i in persist[modName]:
 					setattr(mod, i, persist[modName][i])
