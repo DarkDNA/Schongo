@@ -8,7 +8,7 @@ import os
 __info__ = {
 	"Author": "Ross Delinger",
 	"Version": "1.1",
-	"Dependencies": ["ping", "traceroute"]
+	"Dependencies": []
 }
 def onLoad():
 	
