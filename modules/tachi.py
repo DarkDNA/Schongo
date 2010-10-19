@@ -11,7 +11,8 @@ __info__ = {
 	"Author": "Ross Delinger",
 	"Version": "1.1.1",
 	"Dependencies": [
-		"_persist"
+		"_persist",
+		"_timer"
 	]
 }
 
@@ -37,15 +38,15 @@ def formatDesc(fullDesc):
 	
 def sendUpdateToIRC(feed, xml, title):
 	dataList = feedData[feed]
-	ctx = IrcContext(dataList[1], dataList[2], "CurseYouCatFace")
+	ctx = IrcContext(dataList[1], dataList[2], None)
 	link = xml.getElementsByTagName("link")[1].firstChild.data
 	desc = formatDesc(xml.getElementsByTagName('description')[1].firstChild.data)
 	ctx.reply(u'New post: %s • %s • %s' % (title, link, desc), dataList[0])
 	lastTitles[feed] = title
-	
+
 def onLoad():
 	
-	@timer(300,True)#update every 5 minutes
+	@timer(15,True)#update every 5 minutes #DEBUG check timer, set to 15sec
 	def update_timer():#timer event
 		feedList = feeds.values()
 		for feed in feedList:
@@ -56,7 +57,7 @@ def onLoad():
 				
 				if title != lastTitles[feed]:
 					sendUpdateToIRC(feed, xml, title)
-	
+		return True
 #	@command("feed",1,3)
 
 	parent_cmd("feed")
@@ -112,3 +113,11 @@ def onLoad():
 		for name in feeds:
 			feed = feeds[name]
 			ctx.reply("%s: %s" % (name, feed), "Tachikoma")
+	
+	@hook("module_load")
+	def timer_start(ctx):
+		update_timer.start()
+	
+	@hook("module_unload")
+	def timer_stop(ctx):
+		update_timer.stop()
