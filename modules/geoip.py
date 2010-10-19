@@ -14,7 +14,7 @@ def onLoad():
 	def geoip_cmd(ctx, cmd, arg, ip, *args):
 		fornick = ''
 		if '.' not in ip:
-			data = get_user_data(ctx, ip)
+			data = get_user_info(ctx, ip)
 			if not data:
 				ctx.error("Unknown user")
 				return
