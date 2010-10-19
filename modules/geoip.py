@@ -19,7 +19,7 @@ def onLoad():
 				ctx.error("Unknown user")
 				return
 			# I have no idea what fornick is suppose to do, so I will leave it be.
-			ip = data.Hostname
+			ip = data.HostName
 
 		response = urllib2.urlopen('http://ipinfodb.com/ip_query2.php?ip=%s&timezone=false' % ip)
 
