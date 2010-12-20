@@ -1,6 +1,6 @@
 # encoding=utf-8
 
-from __future__ import with_statement
+
 import sys
 import logging
 import textwrap
@@ -46,6 +46,7 @@ class ModuleInfo:
 	def __init__(self, name):
 		self.deps = []
 		self.depOf = []
+		self.cmds = []
 		self.name = name
 
 	def __str__(self):
@@ -150,7 +151,7 @@ def fire_hook(hook, *args, **kw):
 		for m in mods:
 			try:
 				hooks[hook][m](*args, **kw)
-			except Exception, e:
+			except Exception as e:
 				logger.exception("Hook %s crashed when running module %s", hook, m)
 
 
@@ -162,7 +163,7 @@ def init():
 	
 
 def shutdown():
-	unloadables = mods.keys()
+	unloadables = list(mods.keys())
 	for i in unloadables:
 		unload_module(i)
 
@@ -213,8 +214,6 @@ def load_module(mod, loadType, level=logging.WARN):
 
 
 
-
-	theMod.handle_command = handle_command
 
 	for m in injected_func:
 		for cmd in injected_func[m]:
@@ -339,12 +338,12 @@ def command(name, min=-1, max=-1):
 	def retCmd(f):
 		if(isinstance(name,list)):
 			for n in name:
-				commands[n] = f
+				commands[n.lower()] = f
 		else:
-			commands[name] = f
+			commands[name.lower()] = f
 
 		f._min = min
-		f._max = max		
+		f._max = max
 		return f
 	return retCmd
 
@@ -407,7 +406,7 @@ def load_cmd(ctx, cmd, arg, *mods):
 			load_module(mod, MANUAL, level=level)
 			ctx.reply("Done.", "Load")
 			modulesLoaded += 1
-		except Exception, e:
+		except Exception as e:
 			print_exc(e)
 			ctx.reply("Error loading %s: %s" % (mod,e), "Load")
 	if modulesLoaded > 0:
@@ -426,7 +425,7 @@ unloads the given modules additional commands may be added to this later, but fo
 			unload_module(mod)
 			ctx.reply("Done.", "Unload")
 			modulesUnloaded += 1
-		except Exception, e:
+		except Exception as e:
 			ctx.reply("Error unloading %s: %s" % (mod,e), "Unload")
 
 	if modulesUnloaded > 0:
@@ -447,8 +446,10 @@ Retrieves additional information about the module"""
 
 		ctx.reply("Author: %s" % mod.author, m)
 		ctx.reply("Version: %s" % mod.version, m)
-		ctx.reply("Depends on: %s" % ', '.join([ x.name for x in mod.deps ]), m)
-		ctx.reply("Depended on by: %s" % ', '.join([ x.name for x in mod.depOf ]), m)
+		if len(mod.deps):
+			ctx.reply("Depends on: %s" % ', '.join([ x.name for x in mod.deps ]), m)
+		if len(mod.depOf):
+			ctx.reply("Depended on by: %s" % ', '.join([ x.name for x in mod.depOf ]), m)
 
 		#ctx.reply("Desc: %s" % mod.desc, m)
 	
@@ -509,14 +510,14 @@ Spits out information for <command> (If we have any)"""
 def info_networks_cmd(ctx, cmd, arg):
 	"""info networks
 Spits out information on the networks we are connected to."""
-	s = "I am currently connected to the following networks: %s" % ', '.join(connections.keys())
+	s = "I am currently connected to the following networks: %s" % ', '.join(list(connections.keys()))
 	ctx.reply(s, "Info")
 
 @command(["info modules","info mods"], 0, 0)
 def info_modules_cmd(ctx, cmd, arg):
 	"""info modules
 Lists the currently loaded modules"""
-	s = "I currently have the following modules loaded: %s" % ', '.join(mods.keys())
+	s = "I currently have the following modules loaded: %s" % ', '.join(list(mods.keys()))
 	ctx.reply(s, "Info")
 
 @command("info threads", 0, 0)
@@ -550,6 +551,7 @@ def handle_command(ctx, line, parentcmd=None):
 	else:
 		arg = ""
 		args = []
+	cmd = cmd.lower()
 	if cmd in commands:
 		cmdf = commands[cmd];
 		# TODO: Implement Max args
@@ -561,7 +563,7 @@ def handle_command(ctx, line, parentcmd=None):
 				ctx.error("The command %s takes atleast %d arguments, %d given." % (cmd, cmdf._min, len(args)))
 			else:
 				cmdf(ctx, cmd, arg, *args)
-		except Exception, e:
+		except Exception as e:
 			logger.exception("Error running command %s", cmd)
 		return True
 	elif parentcmd is None:
