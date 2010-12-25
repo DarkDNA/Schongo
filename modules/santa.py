@@ -48,12 +48,12 @@ def onLoad():
 			else:
 				offsetM = 0
 			offsetTotal = (offsetH * 60) + offsetM
-			print 'loc: %s\nmin: %s\ncurrent: %s\nmax: %s' % (stop['full_location'], total, currentTotal, (total + offsetTotal))
+			#print 'loc: %s\nmin: %s\ncurrent: %s\nmax: %s' % (stop['full_location'], total, currentTotal, (total + offsetTotal))
 			if currentTotal > total and currentTotal < (total + offsetTotal):
 				loc = stop['full_location']
 				if loc != lastLoc:
 					ctx = IrcContext(net, chan, None)
-					ctx.reply("Current location: %s" % loc, "@Santa")
+					ctx.reply(u"Current location: %s" % loc, "@Santa")
 					lastLoc = loc
 				break;
 		return True
