@@ -70,7 +70,7 @@ class TimerThread(Thread):
 						except:
 							self.logger.exception("Error running timer %s", timerInfo)
 
-						timerInfo.countdown = -1
+						timerInfo.countdown -= 1
 
 					elif timerInfo.countdown > 0:
 						timerInfo.countdown -= 1
