@@ -184,7 +184,8 @@ class IrcClient(IrcSocket):
 	
 	def part_channel(self, channel, reason=None):
 		self.sendMessage("PART", channel, end=reason)
-		
+	def setTopic(self, channel, topic):
+		self.sendMessage("TOPIC", channel, end=topic)
 	def disconnect(self, reason=None):
 		self.sendMessage("QUIT", end=reason)
 		IrcSocket.disconnect(self, reason)
