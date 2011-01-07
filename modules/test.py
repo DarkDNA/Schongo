@@ -15,7 +15,7 @@ def onLoad():
 
 	@timer(15, True)
 	def bacon_timer(ctx):
-		ctx.reply("Meow!")
+		ctx.reply(cfg.get("test timer"))
 		return True
 
 	@timer(1)
@@ -27,12 +27,12 @@ def onLoad():
 
 	@command("test timer start")
 	def cheese_cmd(ctx, cmd, arg, *args):
-		ctx.reply("I'm hungry...")
+		ctx.reply(cfg.get("test timer start"))
 		bacon_timer.start(ctx)
 
 	@command("test timer stop")
 	def catnip_cmd(ctx, cmd, arg):
-		ctx.reply("Ohh. *nom*")
+		ctx.reply(cfg.get("test timer stop"))
 		bacon_timer.cancel()
 
 	@command("test timer delay")
