@@ -46,5 +46,5 @@ def onLoad():
 		
 		xml.unlink();
 		
-		ctx.reply("Current status is %s • Total Users: %s • Users Online: %s" % 
+		ctx.reply(u"Current status is %s • Total Users: %s • Users Online: %s" % 
 			( status.capitalize(), signups, inworld ), "Second Life")
