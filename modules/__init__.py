@@ -77,20 +77,11 @@ class IrcContext:
 
 		fire_hook("context_create", self)
 
-	def reply(self, msg, prefix=None, parse=True, splitnl=True, splitnliteral=False):
+	def reply(self, msg, prefix=None, parse=True, splitnl=True):
 		lines = []
 		nmsg = [ msg ]
-		if '\n' in msg or '\\n' in msg:
-			if splitnliteral:
-				lines = msg.split('\\n')
-				nmsg = msg.split('\\n')
-			if splitnl:
-				if nmsg == msg:
-					nmsg = msg.split('\n')
-				else:
-					nmsg = []
-					for line in lines:
-						nmsg.extend(line.split('\n'))
+		if '\n' in msg:
+			nmsg = msg.split("\n")
 
 		for line in nmsg:
 			if prefix is not None:
