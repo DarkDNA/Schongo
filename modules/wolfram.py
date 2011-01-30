@@ -37,7 +37,7 @@ def Format_Pod(data):
 def onLoad():
 	@command("wolfram")
 	def cmd_wolfram(ctx, cmd, arg):
-		resp = urllib2.urlopen("http://api.wolframalpha.com/v2/query?input=%s&format=plaintext&appid=%s" % (urllib.quote(arg), cfg.get("key")))
+		resp = urllib2.urlopen("http://api.wolframalpha.com/v2/query?input=%s&format=plaintext&appid=%s" % (urllib.quote(arg.encode("utf-8")), cfg.get("key")))
 
 		xml = dom.parse(resp)
 
