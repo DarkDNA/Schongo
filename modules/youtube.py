@@ -35,7 +35,7 @@ def displayMeta(ctx, data, vid):
 
 # 
 
-ytRegEx = re.compile("http://(www\\.)?youtube.com/watch\\?v=([^&]+)")
+ytRegEx = re.compile("http://(www\\.)?youtube.com/watch\\?v=([^& ]+)")
 ytOtherRegEx = re.compile("video:(.+)")
 
 # And now for something completely different
