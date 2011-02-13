@@ -10,7 +10,7 @@ archive = dict()
 
 def addStatusToArchive(ctx, s):
 	global archive
-	chan = ctx.cha
+	chan = ctx.chan
 	if archive.has_key(chan):
 		archive[chan].insert(0, s)
 	elif not archive.has_key(chan):
