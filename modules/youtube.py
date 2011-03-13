@@ -60,7 +60,7 @@ def displayMeta(ctx, data, vid):
 
 # 
 
-ytRegEx = re.compile("https?://(www\\.)?youtube.com/watch\\?v=([^& ]+)")
+ytRegEx = re.compile("(https?://)?(www\\.)?youtube.com/watch\\?v=([^& ]+)")
 ytOtherRegEx = re.compile("video:(.+)")
 
 # And now for something completely different
@@ -94,5 +94,5 @@ Searches youtube for the given search string"""
 	@hook("message")
 	def message_hook(ctx, message):
 		for m in ytRegEx.finditer(message):
-			YoutubeMeta(ctx, m.group(2))
+			YoutubeMeta(ctx, m.group(3))
 		
