@@ -43,9 +43,9 @@ def showTitle(ctx, url):
 	if newurl != url:
 		s += u" • Redirects to: %s" % newurl
 
-	title = titleRegEx.match(stuff)
-	if title is not None:
-		s += u" • Title: %s" % title.group(1)
+	titleSearch = titleRegEx.search(stuff)
+	if titleSearch is not None:
+		s += u" • Title: %s" % titleSearch.group(1)
 	else:
 		s += u" • Couldn't find Title"
 
