@@ -50,7 +50,10 @@ def displayMeta(ctx, data, vid):
 	r = data.getElementsByTagName("gd:rating")
 	if len(r):
 		r = r[0]
-		s += u" • Average Rating: %1.2f/5" % float(r.getAttribute("average"))
+		s += u" • Average Rating: %1.2f/5 over %s people" % (
+			float(r.getAttribute("average")),
+			prettyNumber(r.getAttribute("numRaters"))
+			)
 	else:
 		s += u" • No ratings"
 	
