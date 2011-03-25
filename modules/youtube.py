@@ -6,31 +6,7 @@ import urllib
 import xml.dom.minidom as dom
 import re
 from _utils import prettyNumber, prettyTime
-archive = dict()
 
-def addStatusToArchive(ctx, s):
-	global archive
-	chan = ctx.chan
-	if archive.has_key(chan):
-		archive[chan].insert(0, s)
-	elif not archive.has_key(chan):
-		archive[chan] = list()
-		archive[chan].append(s)
-
-	if len(archive[chan]) > 5:
-		archive[chan] = archive[chan][:5]
-		
-def outputStatusArchive(ctx):
-	global archive
-	if archive.has_key(ctx.chan):
-		if len(archive[ctx.chan]) > 0:
-			data = '\n'.join([s for s in archive[ctx.chan]])
-			ctx.reply(data, 'Youtube-log')
-		else:
-			ctx.reply("Empty log", "Youtube-log")
-	else:
-		ctx.reply("Empty log", "Youtube-log")
-		
 def YoutubeMeta(ctx, video_id):
 	
 	meta = urllib2.urlopen("http://gdata.youtube.com/feeds/api/videos/%s" % video_id)
@@ -58,12 +34,10 @@ def displayMeta(ctx, data, vid):
 		s += u" • No ratings"
 	
 	s += u" • http://youtu.be/%s" % vid
-	addStatusToArchive(ctx, s)
 	ctx.reply(s, "YouTube")
 
 # 
 
-ytRegEx = re.compile("(https?://)?(www\\.)?youtube.com/watch\\?v=([^& ]+)")
 ytOtherRegEx = re.compile("video:(.+)")
 
 # And now for something completely different
@@ -90,12 +64,3 @@ Searches youtube for the given search string"""
 			vid = vid.split(":")[-1]
 
 			displayMeta(ctx, i, vid)
-	@command("youtube-log")
-	def log_cmd(ctx, cmd, arg):
-		outputStatusArchive(ctx)
-		
-	@hook("message")
-	def message_hook(ctx, message):
-		for m in ytRegEx.finditer(message):
-			YoutubeMeta(ctx, m.group(3))
-		
