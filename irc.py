@@ -184,8 +184,10 @@ class IrcClient(IrcSocket):
 	
 	def part_channel(self, channel, reason=None):
 		self.sendMessage("PART", channel, end=reason)
+	
 	def setTopic(self, channel, topic):
 		self.sendMessage("TOPIC", channel, end=topic)
+
 	def disconnect(self, reason=None):
 		self.sendMessage("QUIT", end=reason)
 		IrcSocket.disconnect(self, reason)
@@ -226,6 +228,9 @@ class IrcClient(IrcSocket):
 
 	def onMode(self, who, chan, modes, values):
 		pass
+
+	def onNotice(self, target, who, message):
+		pass
 		
 	
 	# IRC Events
@@ -243,6 +248,22 @@ class IrcClient(IrcSocket):
 				self.disconnect("No nicks Left")
 			self.nick = self.nicks[self._nickPos]
 			self.sendMessage("NICK", self.nick)
+		elif msg.command == "NOTICE":
+			target = msg.args[0]
+			message = msg.args[1]
+			if message.startswith("\x01") and message.endswith("\x01"):
+				body = message[1:-1];
+				parts = body.split(' ', 1)
+				cmd = parts[0]
+				if len(parts) > 1:
+					arg = parts[1]
+				else:
+					arg = None
+				
+				self.onCtcp(target, msg.origin, cmd, arg)
+			else:
+				self.onNotice(target, msg.origin, message)
+
 		elif msg.command == "PRIVMSG":
 			channel = msg.args[0]
 			message = msg.args[1]

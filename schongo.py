@@ -28,7 +28,39 @@ if os.path.isdir(".git"):
 			version = f2.read()[:8]
 
 class SchongoClient(IrcClient):
-	def __init__(self, server, port=6667, nicks=None, ident=None, realname=None, network=None, channels=None):
+	def __init__(self, network, cfg):
+
+		server = cfg.get("server")
+		port = cfg.getint("port")
+		nicks = cfg.getlist("nicks")
+		ident = cfg.get("ident")
+		realname = cfg.get("real name")
+
+		def get(opt):
+			try:
+				return cfg.get(opt)
+			except:
+				return None
+
+
+
+		self._ns_name = get("nickserv name")
+		self._ns_pass = get("nickserv password")
+		self._ns_find = get("nickserv find")
+
+		if self._ns_find is None:
+			self._ns_find = "is registered"
+		
+		if self._ns_name is None:
+			self._ns_name = "NickServ"
+
+		if self._ns_pass is None:
+			self._ns_authed = True
+		else:
+			self._ns_authed = False
+
+		channels = cfg.getlist("channels")
+
 		IrcClient.__init__(self, server, port, nicks, ident, realname)
 
 		if channels is None:
@@ -110,6 +142,13 @@ class SchongoClient(IrcClient):
 	def onMode(self, who, chan, mode, args):
 		modules.fire_hook("mode", modules.IrcContext(self, chan, who), mode, args)
 
+	def onNotice(self, target, who, message):
+		if not self._ns_authed and who.nick == self._ns_name:
+			if self._ns_find in message:
+				self.say(self._ns_name, "IDENTIFY %s" % self._ns_pass)
+		else: # Intentionally don't allow it to intercept NickServ messages.
+			modules.fire_hook("notice", modules.IrcContext(self, target, who), message);
+
 	# Overrides IrcClient
 	def onMessage(self, msg):
 		# Call the parent so we still function.
@@ -156,7 +195,7 @@ The config file should go in the data directory""")
 	logging.info("Reading config file: %s" % configFile)
 	try:
 		config.read(configFile)
-	except Exception,e:
+	except Exception as e:
 		logging.error("Error reading config file: %s" % e)
 		return
 
@@ -174,15 +213,16 @@ The config file should go in the data directory""")
 
 	for i in basic.getlist("networks"):
 		net = config.get_section("Network/%s" % i)
-		sch = SchongoClient(
+		sch = SchongoClient(i, net)
+		"""
 			server=net.get("server"),
 			port=net.getint("port"),
-			nicks=net.getlist("nicks"),
+			)icks=net.getlist("nicks"),
 			ident=net.get("ident"),
 			realname=net.get("real name"),
 			network=i,
 			channels=net.getlist("channels")
-		)
+		)"""
 		sch.connect()
 		sch.start()
 		schongos[i] = sch
