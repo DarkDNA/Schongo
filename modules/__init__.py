@@ -379,7 +379,7 @@ parent_cmd("unload")
 def load_cmd(ctx, cmd, arg, *mods):
 	"""load module <mod1> [mod2]...
 	Loads the given modules"""
-	modulesLoaded = 0
+	finalOutput = list()
 	level = logging.WARN
 	for mod in mods:
 		if mod in ("-info","-debug","-warn","-normal"):
@@ -395,35 +395,27 @@ def load_cmd(ctx, cmd, arg, *mods):
 
 		try:
 			load_module(mod, MANUAL, level=level)
-			ctx.reply("Done.", "Load")
-			modulesLoaded += 1
+			finalOutput.append("`B%s`B: loaded" % mod)
 		except Exception as e:
 			print_exc(e)
-			ctx.reply("Error loading %s: %s" % (mod,e), "Load")
-	if modulesLoaded > 0:
-		if modulesLoaded == 1:
-			ctx.reply("Loaded %s module" % modulesLoaded, "Load")
-		else:
-			ctx.reply("Loaded %s modules" % modulesLoaded, "Load")
+			finalOutput.append("`B%s`B: failed (%s)" % (mod,e))
+	if len(finalOutput) > 0:
+		ctx.reply(', '.join(finalOutput), "Load")
 
 @command(["unload mod", "unload module"], 1)
 def unload_cmd(ctx, cmd, arg, *mods):
 	"""unload module <mod1> [mod2]...
 unloads the given modules additional commands may be added to this later, but for now module is the only one"""
-	modulesUnloaded = 0
+	finalOutput = list()
 	for mod in mods:
 		try:
 			unload_module(mod)
-			ctx.reply("Done.", "Unload")
-			modulesUnloaded += 1
+			finalOutput.append("`B%s`B: unloaded" % mod)
 		except Exception as e:
-			ctx.reply("Error unloading %s: %s" % (mod,e), "Unload")
+			finalOutput.append("`B%s`B: failed (%s)" % (mod,e))
 
-	if modulesUnloaded > 0:
-		if modulesUnloaded == 1:
-			ctx.reply("Unloaded %s module" % modulesUnloaded, "Unload")
-		else:
-			ctx.reply("Unloaded %s modules" % modulesUnloaded, "Unload")
+	if len(finalOutput) > 0:
+		ctx.reply(', '.join(finalOutput), "Unload")
 
 parent_cmd("info")
 

@@ -6,6 +6,9 @@ import xml.dom.minidom as dom
 import re
 from _utils import prettyNumber, prettyTime
 
+archive = dict()
+
+
 READ_SIZE = 32000;
 
 __info__ = {
@@ -19,6 +22,28 @@ ytRegEx = re.compile(r"(https?://)?(www\.)?youtu(be\.com/watch\?v=|\.be/)([^& ]+
 genRegEx = re.compile(r"https?://([^ ]+)")
 titleRegEx = re.compile(r"<title>(.+)</title>")
 
+def addStatusToArchive(ctx, s, prefix):
+	global archive
+	chan = ctx.chan
+	if archive.has_key(chan):
+		archive[chan].insert(0, (prefix,s))
+	elif not archive.has_key(chan):
+		archive[chan] = list()
+		archive[chan].append((prefix,s))
+
+	if len(archive[chan]) > 5:
+		archive[chan] = archive[chan][:5]
+
+def outputStatusArchive(ctx):
+	global archive
+	if archive.has_key(ctx.chan):
+		if len(archive[ctx.chan]) > 0:
+			[ctx.reply(s[1],s[0]) for s in archive[ctx.chan]]
+			
+		else:
+			ctx.reply("Empty log", "UrlLog")
+	else:
+		ctx.reply("Empty log", "UrlLog")
 
 def showTitle(ctx, url):
 	ytMatch = ytRegEx.match(url)
@@ -43,12 +68,12 @@ def showTitle(ctx, url):
 	if newurl != url:
 		s += u" • Redirects to: %s" % newurl
 
-	title = titleRegEx.match(stuff)
-	if title is not None:
-		s += u" • Title: %s" % title.group(1)
+	titleSearch = titleRegEx.search(stuff)
+	if titleSearch is not None:
+		s += u" • Title: %s" % titleSearch.group(1)
 	else:
 		s += u" • Couldn't find Title"
-
+	addStatusToArchive(ctx,s,"UrlLog")
 	ctx.reply(s, "UrlLog")
 		
 
@@ -79,7 +104,7 @@ def displayMeta(ctx, data, vid):
 		s += u" • No ratings"
 	
 	s += u" • http://youtu.be/%s" % vid
-	#addStatusToArchive(ctx, s)
+	addStatusToArchive(ctx, s, "YouTube")
 	ctx.reply(s, "YouTube")
 
 def onLoad():
@@ -87,3 +112,7 @@ def onLoad():
 	def message_hook(ctx, message):
 		for m in genRegEx.finditer(message):
 			showTitle(ctx, m.group(0))
+
+	@command("urllog")
+	def log_cmd(ctx, cmd, arg):
+		outputStatusArchive(ctx)
