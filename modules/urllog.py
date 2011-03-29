@@ -5,6 +5,7 @@ import urllib2
 import xml.dom.minidom as dom
 import re
 from _utils import prettyNumber, prettyTime
+import threading
 
 archive = dict()
 
@@ -128,11 +129,24 @@ def displayMeta(ctx, data, vid):
 	addStatusToArchive(ctx, s, "YouTube")
 	ctx.reply(s, "YouTube")
 
+
+class LookupThread(threading.Thread):
+	def __init__(self, ctx, msg):
+		threading.Thread.__init__(self, name="Lookup Thread")
+		self.ctx = ctx
+		self.msg = msg
+
+	def run(self):
+		for m in genRegEx.finditer(self.msg):
+			showTitle(self.ctx, m.group(0))
+
+
+
 def onLoad():
 	@hook("message")
 	def message_hook(ctx, message):
-		for m in genRegEx.finditer(message):
-			showTitle(ctx, m.group(0))
+		t = LookupThread(ctx, message)
+		t.start()
 
 	@command("urllog")
 	def log_cmd(ctx, cmd, arg):
