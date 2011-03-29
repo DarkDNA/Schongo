@@ -90,18 +90,29 @@ def displayMeta(ctx, data, vid):
 	s = u""
 	s += u"Title: %s " % data.getElementsByTagName("title")[0].firstChild.data
 	s += u" • By: %s"  % data.getElementsByTagName("author")[0].getElementsByTagName("name")[0].firstChild.data
-	s += u" • Length: %s" % prettyTime(data.getElementsByTagName("yt:duration")[0].getAttribute("seconds"))
-	s += u" • View Count: %s" % prettyNumber(data.getElementsByTagName("yt:statistics")[0].getAttribute("viewCount"))
 
-	r = data.getElementsByTagName("gd:rating")
+	showRest = True
+
+	r = data.getElementsByTagName("yt:state")
 	if len(r):
 		r = r[0]
-		s += u" • Average Rating: %1.2f/5 over %s people" % (
-			float(r.getAttribute("average")),
-			prettyNumber(r.getAttribute("numRaters"))
-			)
-	else:
-		s += u" • No ratings"
+		if r.getAttribute("name") == "restricted":
+			s += u" • Video is unavailable: %s" % r.firstChild.data
+			showRest = False
+
+	if showRest:
+		s += u" • Length: %s" % prettyTime(data.getElementsByTagName("yt:duration")[0].getAttribute("seconds"))
+		s += u" • View Count: %s" % prettyNumber(data.getElementsByTagName("yt:statistics")[0].getAttribute("viewCount"))
+
+		r = data.getElementsByTagName("gd:rating")
+		if len(r):
+			r = r[0]
+			s += u" • Average Rating: %1.2f/5 over %s people" % (
+				float(r.getAttribute("average")),
+				prettyNumber(r.getAttribute("numRaters"))
+				)
+		else:
+			s += u" • No ratings"
 	
 	s += u" • http://youtu.be/%s" % vid
 	addStatusToArchive(ctx, s, "YouTube")
