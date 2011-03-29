@@ -51,10 +51,18 @@ def showTitle(ctx, url):
 		showYouTube(ctx, ytMatch.group(4))
 		return
 
-	u = urllib2.urlopen(url)
-	stuff = u.read(READ_SIZE)
-	newurl = u.url
-	u.close()
+	s = u"Url: %s" % url
+
+	try:
+		u = urllib2.urlopen(url)
+		stuff = u.read(READ_SIZE)
+		newurl = u.url
+		u.close()
+	except urllib2.HTTPError:
+		# Intentionally not adding this to the archive, no point spamming unparsable URLs
+		s += u" • Failed to get title: HTTP Error."
+		ctx.reply(s, "UrlLog")
+		return
 
 	# Look again after reading it in, to see if it is a shortened youtube url.
 
@@ -63,7 +71,6 @@ def showTitle(ctx, url):
 		showYouTube(ctx, m.group(4))
 		return
 
-	s = u"Url: %s" % url
 
 	if newurl != url:
 		s += u" • Redirects to: %s" % newurl
@@ -73,7 +80,10 @@ def showTitle(ctx, url):
 		s += u" • Title: %s" % titleSearch.group(1)
 	else:
 		s += u" • Couldn't find Title"
+
+
 	addStatusToArchive(ctx,s,"UrlLog")
+
 	ctx.reply(s, "UrlLog")
 		
 
