@@ -22,6 +22,7 @@ __info__ = {
 ytRegEx = re.compile(r"(https?://)?(www\.)?youtu(be\.com/watch\?v=|\.be/)([^& ]+)")
 genRegEx = re.compile(r"https?://([^ ]+)")
 titleRegEx = re.compile(r"<title>(.+)</title>")
+titleMimes = [ "text/html" ]
 
 def addStatusToArchive(ctx, s, prefix):
 	global archive
@@ -58,10 +59,15 @@ def showTitle(ctx, url):
 		u = urllib2.urlopen(url)
 		stuff = u.read(READ_SIZE)
 		newurl = u.url
+		mime = u.info().gettype()
 		u.close()
 	except urllib2.HTTPError:
 		# Intentionally not adding this to the archive, no point spamming unparsable URLs
 		s += u" • Failed to get title: HTTP Error."
+		ctx.reply(s, "UrlLog")
+		return
+	except urllib2.URLError:
+		s += u" • Failed to get title: URL Error."
 		ctx.reply(s, "UrlLog")
 		return
 
@@ -76,12 +82,14 @@ def showTitle(ctx, url):
 	if newurl != url:
 		s += u" • Redirects to: %s" % newurl
 
+	if mime not in titleMimes:
+		s += u" • Mime: %s" % mime
+
 	titleSearch = titleRegEx.search(stuff)
 	if titleSearch is not None:
 		s += u" • Title: %s" % titleSearch.group(1)
-	else:
-		s += u" • Couldn't find Title"
-
+	elif mime in titleMimes:
+		s += u" • Could not find title."
 
 	addStatusToArchive(ctx,s,"UrlLog")
 
