@@ -116,8 +116,11 @@ def displayMeta(ctx, data, vid):
 	if len(r):
 		r = r[0]
 		if r.getAttribute("name") == "restricted":
-			s += u" • Video is unavailable: %s" % r.firstChild.data
-			showRest = False
+			showRest = r.getAttribute("reasonCode") == "limitedSyndication"
+			if showRest:
+				s += u" • Syndication Limited."
+			else:
+				s += u" • Video is unavailable: %s" % r.firstChild.data
 
 	if showRest:
 		s += u" • Length: %s" % prettyTime(data.getElementsByTagName("yt:duration")[0].getAttribute("seconds"))
