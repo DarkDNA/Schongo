@@ -3,6 +3,7 @@
 import urllib
 import re
 import json
+from _utils import unescapeHtml
 
 def jsonLoad(fp):
 	if hasattr(json, "load"):
@@ -26,16 +27,26 @@ def translate(what, src=None, target="en"):
 	f = urllib.urlopen(url);
 	data = jsonLoad(f);
 
-	print data
-
 	if "detectedSourceLanguage" in data["data"]["translations"][0]:
 		return data["data"]["translations"][0]["detectedSourceLanguage"], data["data"]["translations"][0]["translatedText"]
 	elif src is not None:
-		return src, data["data"]["translations"][0]["translatedText"]
+		return src, unescapeHtml(
+				data["data"]["translations"][0]["translatedText"])
 	else:
-		return "unk", data["data"]["translations"][0]["translatedText"]
+		return "unk", unescapeHtml(
+				data["data"]["translations"][0]["translatedText"])
 
 def onLoad():
+
+	languages = []
+
+	url = "https://www.googleapis.com/language/translate/v2/languages?key=%s" % urllib.quote(cfg.get("key"))
+	f = urllib.urlopen(url)
+	data = jsonLoad(f)
+
+	for i in data["data"]["languages"]:
+		languages.append(i["language"])
+
 	@command("translate", 1)
 	def translate_cmd(ctx, cmd, arg, *unused):
 		"""translate (src=>target) something here
@@ -44,10 +55,15 @@ Uses Google Translate."""
 		src=None
 		targ="en"
 
-		m = re.match("([a-z]{2})=>([a-z]{2})", arg)
+		m = re.match("([^ =]+)=>([^ ]+)", arg)
 		if m is not None:
 			src=m.group(1)
 			targ=m.group(2)
+
+			if src not in languages or targ not in languages:
+				ctx.error("Invalid Language")
+				return
+
 			arg = arg[arg.find(" ")+1:]
 
 
