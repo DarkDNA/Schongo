@@ -3,6 +3,7 @@ import subprocess as subProc
 import os
 import threading
 import time
+import htmllib
 locale.setlocale(locale.LC_ALL, "")
 
 def prettyNumber(num):
@@ -50,6 +51,12 @@ def listify(list, useand=False):
 		result = ', '.join(list)
 
 	return result
+
+def unescapeHtml(html):
+	p = htmllib.HTMLParser(None)
+	p.save_bgn()
+	p.feed(html)
+	return p.save_end()
 
 class procThread(threading.Thread):
 	context = None
