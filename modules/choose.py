@@ -13,5 +13,4 @@ Picks from the given options - options are seperated by the string ' or '"""
 		"""8ball <life questions of great importance>
 Shakes the bot's built-in ( Free of charge! ) eight ball, and outputs the result"""
 		ctx.reply("%s: %s" % (ctx.who.nick, choice((
-			'Yes', 'No', 'Outlook hazy, ask again later',
-			'Maybe', 'Computer says no.'))))
+			'Yes', 'No', 'Computer says no.', 'Computer say yes!'))))
