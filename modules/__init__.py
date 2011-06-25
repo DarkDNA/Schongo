@@ -358,6 +358,15 @@ def parent_cmd(name):
 		if not handle_command(ctx, arg, cmd):
 			ctx.error("No such sub-command")
 
+@injected
+def privs(level, *groups):
+	def func(f):
+		f._level = level
+		f._groups = groups
+		return f
+	return func
+
+
 ### Utility injected code
 
 def injected_util(func):
@@ -375,6 +384,7 @@ injected_util(fire_hook)
 parent_cmd("load")
 parent_cmd("unload")
 
+@privs(5, "moduleadmin")
 @command(["load module", "load mod"], 1)
 def load_cmd(ctx, cmd, arg, *mods):
 	"""load module <mod1> [mod2]...
@@ -402,6 +412,7 @@ def load_cmd(ctx, cmd, arg, *mods):
 	if len(finalOutput) > 0:
 		ctx.reply(', '.join(finalOutput), "Load")
 
+@privs(5, "moduleadmin")
 @command(["unload mod", "unload module"], 1)
 def unload_cmd(ctx, cmd, arg, *mods):
 	"""unload module <mod1> [mod2]...
@@ -418,6 +429,17 @@ unloads the given modules additional commands may be added to this later, but fo
 		ctx.reply(', '.join(finalOutput), "Unload")
 
 parent_cmd("info")
+
+@command("info permissions", 0, 0)
+def info_perms_cmd(ctx, cmd, arg):
+	if hasattr(ctx.who, "level"):
+		ctx.reply("You are level %d and belong to the following groups: %s" % (
+			ctx.who.level,
+			", ".join(ctx.who.groups)
+			))
+	else:
+		ctx.reply("There is no permission plugin loaded, please report this to the bot adminenstrator.")
+
 
 @command(["info module", "info mod"], 1, 1)
 def info_mod_cmd(ctx, cmd, arg, m, *args):
@@ -489,6 +511,7 @@ Spits out information for <command> (If we have any)"""
 	else:
 		ctx.reply("I don't seem to have any data available for that command.")
 
+@privs(5)
 @command("info networks", 0, 0)
 def info_networks_cmd(ctx, cmd, arg):
 	"""info networks
@@ -496,6 +519,7 @@ Spits out information on the networks we are connected to."""
 	s = "I am currently connected to the following networks: %s" % ', '.join(list(connections.keys()))
 	ctx.reply(s, "Info")
 
+@privs(5)
 @command(["info modules","info mods"], 0, 0)
 def info_modules_cmd(ctx, cmd, arg):
 	"""info modules
@@ -503,6 +527,7 @@ Lists the currently loaded modules"""
 	s = "I currently have the following modules loaded: %s" % ', '.join(list(mods.keys()))
 	ctx.reply(s, "Info")
 
+@privs(5)
 @command("info threads", 0, 0)
 def info_threads_cmd(ctx, cmd, arg):
 	"""info threads
@@ -512,6 +537,7 @@ Lists the currently running threads"""
 	ctx.reply(s, "Info")
 
 
+#@priv(5)
 @command("shutdown")
 def shutdown_cmd(ctx, cmd, arg):
 	"""Shuts down the bot with the given message"""
@@ -523,8 +549,31 @@ def shutdown_cmd(ctx, cmd, arg):
 	for net in connections:
 		connections[net].disconnect(arg)
 	
+def check_command(cmd, lvl, groups):
+	if hasattr(cmd, "_level"):
+		if cmd._level <= lvl:
+			return True
+		for g in cmd._groups:
+			if g in groups:
+				return True
+		return False
+	return True
+
+
 def handle_command(ctx, line, parentcmd=None):
 	parts = line.split(' ',1)
+
+	if ctx.who is not None:
+		if hasattr(ctx.who, "level"):
+			wholvl = ctx.who.level
+		else:
+			wholvl = 1
+
+		if hasattr(ctx.who, "groups"):
+			whogroups = ctx.who.groups
+		else:
+			whogroups = []
+
 	cmd = parts[0]
 	if parentcmd is not None:
 		cmd = '%s %s' % (parentcmd, cmd)
@@ -539,7 +588,9 @@ def handle_command(ctx, line, parentcmd=None):
 		cmdf = commands[cmd];
 		# TODO: Implement Max args
 		try:
-			if cmdf._min == -1:
+			if not check_command(cmdf, wholvl, whogroups):
+				ctx.error("You don't have permission to run that command")
+			elif cmdf._min == -1:
 				# Dumb command
 				cmdf(ctx, cmd, arg);
 			elif len(args) < cmdf._min:

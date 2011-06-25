@@ -165,6 +165,11 @@ def main(argv):
 	debug = False
 	configFile = None
 
+	dn = os.path.dirname(__file__)
+	if dn is not "":
+		os.chdir(dn)
+	del dn
+
 	for arg,val in opts:
 		if arg == "--debug" or arg == "-v":
 			debug = True
