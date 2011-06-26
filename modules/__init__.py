@@ -537,7 +537,7 @@ Lists the currently running threads"""
 	ctx.reply(s, "Info")
 
 
-@priv(5)
+@privs(5)
 @command("shutdown")
 def shutdown_cmd(ctx, cmd, arg):
 	"""Shuts down the bot with the given message"""
