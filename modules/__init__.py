@@ -485,8 +485,8 @@ Spits out information for <command> (If we have any)"""
 		else:
 			s += ": ** This should never happen **"
 
-		if theCmd._mod != "__init__":
-			s += " from module %s: " % theCmd._mod
+		if theCmd.__module__ != "modules":
+			s += " from module %s: " % theCmd.__module__.split(".", 1)[1]
 		else:
 			s += ": "
 
