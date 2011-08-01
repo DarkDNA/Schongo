@@ -83,7 +83,7 @@ def showTitle(ctx, url):
 		s += u" • Redirects to: %s" % newurl
 
 	if mime not in titleMimes:
-		s += u" • Mime: %s" % mime
+		s += u" • MIME: %s" % mime
 
 	titleSearch = titleRegEx.search(stuff)
 	if titleSearch is not None:
