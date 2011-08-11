@@ -19,7 +19,7 @@ __info__ = {
 }
 
 
-ytRegEx = re.compile(r"(https?://)?(www\.)?youtu(be\.com/watch\?v=|\.be/)([^& ]+)")
+ytRegEx = re.compile(r"(https?://)?(www\.)?youtu(be\.com/watch\?[^ ]*v=|\.be/)([^& ]+)")
 genRegEx = re.compile(r"https?://([^ ]+)")
 titleRegEx = re.compile(r"<title>(.+)</title>")
 titleMimes = [ "text/html" ]
