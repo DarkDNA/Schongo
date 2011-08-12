@@ -21,10 +21,9 @@ def onLoad():
 					try:
 						acronym, meaning = line.split(" ", 1)
 					except ValueError:
-						# DONGS DONGS DONGS
-
+						pass
 				acronyms[acronym] = meaning.strip()
-
+	
 	@command("wtf", 1, 1)
 	def wtf_cmd(ctx, cmd, arg, word):
 		word = word.upper()
