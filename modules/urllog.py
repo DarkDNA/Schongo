@@ -28,10 +28,10 @@ def addStatusToArchive(ctx, s, prefix):
 	global archive
 	chan = ctx.chan
 	if archive.has_key(chan):
-		archive[chan].insert(0, (prefix,s))
+		archive[chan].insert(0, (prefix, s))
 	elif not archive.has_key(chan):
 		archive[chan] = list()
-		archive[chan].append((prefix,s))
+		archive[chan].append((prefix, s))
 
 	if len(archive[chan]) > 5:
 		archive[chan] = archive[chan][:5]
@@ -40,7 +40,8 @@ def outputStatusArchive(ctx):
 	global archive
 	if archive.has_key(ctx.chan):
 		if len(archive[ctx.chan]) > 0:
-			[ctx.reply(s[1],s[0]) for s in archive[ctx.chan]]
+			for msg, prefix in archive[ctx.chan]:
+				ctx.reply(msg, prefix);
 			
 		else:
 			ctx.reply("Empty log", "UrlLog")
@@ -61,13 +62,13 @@ def showTitle(ctx, url):
 		newurl = u.url
 		mime = u.info().gettype()
 		u.close()
-	except urllib2.HTTPError:
+	except urllib2.HTTPError as e:
 		# Intentionally not adding this to the archive, no point spamming unparsable URLs
-		s += u" • Failed to get title: HTTP Error."
+		s += u" • Failed to get information, HTTP Error: %d." % e.code
 		ctx.reply(s, "UrlLog")
 		return
-	except urllib2.URLError:
-		s += u" • Failed to get title: URL Error."
+	except urllib2.URLError as e:
+		s += u" • Failed to get information: URL Error: %s." % e.reason
 		ctx.reply(s, "UrlLog")
 		return
 
