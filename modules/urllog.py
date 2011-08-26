@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 """Sniffs URLs and shows the title for them, with special detection for sniffing youtube URLs"""
 
 import urllib2
