@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 """Sniffs URLs and shows the title for them, with special detection for sniffing youtube URLs"""
 
 import urllib2
@@ -88,7 +88,7 @@ def showTitle(ctx, url):
 
 	titleSearch = titleRegEx.search(stuff)
 	if titleSearch is not None:
-		s += u" • Title: %s" % titleSearch.group(1)
+		s += u" • Title: %s" % titleSearch.group(1).decode('utf-8')
 	elif mime in titleMimes:
 		s += u" • Could not find title."
 
