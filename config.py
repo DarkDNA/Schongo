@@ -1,4 +1,4 @@
-from ConfigParser import RawConfigParser,NoSectionError
+from configparser import RawConfigParser,NoSectionError
 
 
 class ConfigSection:
@@ -49,6 +49,6 @@ class Config(RawConfigParser):
 			if createIfNone:
 				self.add_section(section)
 			else:
-				raise NoSectionError, "No such section %s" % section
+				raise NoSectionError("No such section %s" % section)
 
 		return ConfigSection(self, section)

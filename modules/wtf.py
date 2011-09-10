@@ -27,7 +27,7 @@ def onLoad():
 	
 	n = 0
 	try:
-		with file("/usr/share/nmap/nmap-services", "r") as f:
+		with open("/usr/share/nmap/nmap-services", "r") as f:
 			for line in f:
 				line = line.strip()
 				if line[0] == "#":

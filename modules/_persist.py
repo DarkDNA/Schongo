@@ -18,7 +18,7 @@ __info__ = {
 def load_persist():
 	global persist
 	try:
-		f = file("data/mod_persist.pickle", "rb")
+		f = open("data/mod_persist.pickle", "rb")
 		persist = pickle.load(f)
 		f.close()
 		logger.info("Persist loaded: %s", persist)
@@ -29,7 +29,7 @@ def load_persist():
 def save_persist():
 	global persist
 	logger.info("Saving persist: %s", persist)
-	f = file("data/mod_persist.pickle", "wb")
+	f = open("data/mod_persist.pickle", "wb")
 	pickle.dump(persist, f)
 	f.flush()
 	f.close()

@@ -49,7 +49,7 @@ class IrcSocket(Thread):
 		self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		try:
 			self._socket.connect((self._server, self._port))
-		except socket.error, message:
+		except socket.error as message:
 			#print("!!! Could not connect: %s" % message)
 			self.logger.error("Could not connect: %s" % message)
 			return
@@ -80,7 +80,7 @@ class IrcSocket(Thread):
 		
 		try:
 			line = line.encode('utf-8')
-		except UnicodeEncodeError, error:
+		except UnicodeEncodeError as error:
 			self.logger.warn('Could not encode UTF-8 string sent to socket: %s' % error)
 
 		self._socket.send(line)
@@ -106,7 +106,7 @@ class IrcSocket(Thread):
 				line = line.strip()
 				try:
 					line = line.decode('utf-8')
-				except UnicodeDecodeError, error:
+				except UnicodeDecodeError as error:
 					self.logger.warn('Could not decode UTF-8 string sent by socket: %s' % error)
 
 				self.logger.debug("=> %s" % line)
