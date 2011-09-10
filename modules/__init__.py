@@ -407,8 +407,9 @@ def load_cmd(ctx, cmd, arg, *mods):
 			load_module(mod, MANUAL, level=level)
 			finalOutput.append("`B%s`B: loaded" % mod)
 		except Exception as e:
-			print_exc(e)
 			finalOutput.append("`B%s`B: failed (%s)" % (mod,e))
+			print_exc(e)
+
 	if len(finalOutput) > 0:
 		ctx.reply(', '.join(finalOutput), "Load")
 

@@ -3,7 +3,12 @@ import subprocess as subProc
 import os
 import threading
 import time
-import htmllib
+import html.parser
+import re
+
+htmlre = re.compile("&([^;]+);")
+
+
 locale.setlocale(locale.LC_ALL, "")
 
 def prettyNumber(num):
@@ -53,10 +58,13 @@ def listify(list, useand=False):
 	return result
 
 def unescapeHtml(html):
-	p = htmllib.HTMLParser(None)
-	p.save_bgn()
-	p.feed(html)
-	return p.save_end()
+	def blah(match):
+		bla = match.group(1)
+		if bla in html.entities.entitydefs:
+			return html.entities.entitydefs[bla]
+		return chr(int(match.group(1)))
+	return htmlre.sub(blah, html)
+
 
 class procThread(threading.Thread):
 	context = None

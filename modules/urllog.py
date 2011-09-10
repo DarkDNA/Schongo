@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """Sniffs URLs and shows the title for them, with special detection for sniffing youtube URLs"""
 
-import urllib2
+import urllib.request
+import urllib.error
 import xml.dom.minidom as dom
 import re
-from _utils import prettyNumber, prettyTime
+from modules._utils import prettyNumber, prettyTime
 import threading
 
 archive = dict()
@@ -27,9 +28,9 @@ titleMimes = [ "text/html" ]
 def addStatusToArchive(ctx, s, prefix):
 	global archive
 	chan = ctx.chan
-	if archive.has_key(chan):
+	if chan in archive:
 		archive[chan].insert(0, (prefix, s))
-	elif not archive.has_key(chan):
+	elif chan not in archive:
 		archive[chan] = list()
 		archive[chan].append((prefix, s))
 
@@ -54,21 +55,21 @@ def showTitle(ctx, url):
 		showYouTube(ctx, ytMatch.group(4))
 		return
 
-	s = u"Url: %s" % url
+	s = "Url: %s" % url
 
 	try:
-		u = urllib2.urlopen(url)
-		stuff = u.read(READ_SIZE)
+		u = urllib.request.urlopen(url)
+		stuff = u.read(READ_SIZE).decode("utf-8")
 		newurl = u.url
-		mime = u.info().gettype()
+		mime = u.info().get_content_type()
 		u.close()
-	except urllib2.HTTPError as e:
+	except urllib.error.HTTPError as e:
 		# Intentionally not adding this to the archive, no point spamming unparsable URLs
-		s += u" • Failed to get information, HTTP Error: %d." % e.code
+		s += " • Failed to get information, HTTP Error: %d." % e.code
 		ctx.reply(s, "UrlLog")
 		return
-	except urllib2.URLError as e:
-		s += u" • Failed to get information: URL Error: %s." % e.reason
+	except urllib.error.URLError as e:
+		s += " • Failed to get information: URL Error: %s." % e.reason
 		ctx.reply(s, "UrlLog")
 		return
 
@@ -81,16 +82,16 @@ def showTitle(ctx, url):
 
 
 	if newurl != url:
-		s += u" • Redirects to: %s" % newurl
+		s += " • Redirects to: %s" % newurl
 
 	if mime not in titleMimes:
-		s += u" • MIME type: %s" % mime
+		s += " • MIME type: %s" % mime
 
 	titleSearch = titleRegEx.search(stuff)
 	if titleSearch is not None:
-		s += u" • Title: %s" % titleSearch.group(1).decode('utf-8')
+		s += " • Title: %s" % titleSearch.group(1)
 	elif mime in titleMimes:
-		s += u" • Could not find title."
+		s += " • Could not find title."
 
 	addStatusToArchive(ctx,s,"UrlLog")
 
@@ -99,7 +100,7 @@ def showTitle(ctx, url):
 
 def showYouTube(ctx, video_id):
 	
-	meta = urllib2.urlopen("http://gdata.youtube.com/feeds/api/videos/%s" % video_id)
+	meta = urllib.request.urlopen("http://gdata.youtube.com/feeds/api/videos/%s" % video_id)
 	meta = dom.parse(meta) #meta.read()
 	
 	return displayMeta(ctx, meta, video_id)
@@ -107,9 +108,9 @@ def showYouTube(ctx, video_id):
 def displayMeta(ctx, data, vid):
 	"""Displays a single youtube video result, given the xml node"""
 	
-	s = u""
-	s += u"Title: %s " % data.getElementsByTagName("title")[0].firstChild.data
-	s += u" • By: %s"  % data.getElementsByTagName("author")[0].getElementsByTagName("name")[0].firstChild.data
+	s = ""
+	s += "Title: %s " % data.getElementsByTagName("title")[0].firstChild.data
+	s += " • By: %s"  % data.getElementsByTagName("author")[0].getElementsByTagName("name")[0].firstChild.data
 
 	showRest = True
 
@@ -119,25 +120,25 @@ def displayMeta(ctx, data, vid):
 		if r.getAttribute("name") == "restricted":
 			showRest = r.getAttribute("reasonCode") == "limitedSyndication"
 			if showRest:
-				s += u" • Syndication Limited."
+				s += " • Syndication Limited."
 			else:
-				s += u" • Video is unavailable: %s" % r.firstChild.data
+				s += " • Video is unavailable: %s" % r.firstChild.data
 
 	if showRest:
-		s += u" • Length: %s" % prettyTime(data.getElementsByTagName("yt:duration")[0].getAttribute("seconds"))
-		s += u" • View Count: %s" % prettyNumber(data.getElementsByTagName("yt:statistics")[0].getAttribute("viewCount"))
+		s += " • Length: %s" % prettyTime(data.getElementsByTagName("yt:duration")[0].getAttribute("seconds"))
+		s += " • View Count: %s" % prettyNumber(data.getElementsByTagName("yt:statistics")[0].getAttribute("viewCount"))
 
 		r = data.getElementsByTagName("gd:rating")
 		if len(r):
 			r = r[0]
-			s += u" • Average Rating: %1.2f/5 over %s people" % (
+			s += " • Average Rating: %1.2f/5 over %s people" % (
 				float(r.getAttribute("average")),
 				prettyNumber(r.getAttribute("numRaters"))
 				)
 		else:
-			s += u" • No ratings"
+			s += " • No ratings"
 	
-	s += u" • http://youtu.be/%s" % vid
+	s += " • http://youtu.be/%s" % vid
 	addStatusToArchive(ctx, s, "YouTube")
 	ctx.reply(s, "YouTube")
 

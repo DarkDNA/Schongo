@@ -78,10 +78,7 @@ class IrcSocket(Thread):
 		
 		line += "\r\n"
 		
-		try:
-			line = line.encode('utf-8')
-		except UnicodeEncodeError as error:
-			self.logger.warn('Could not encode UTF-8 string sent to socket: %s' % error)
+		line = line.encode('utf-8')
 
 		self._socket.send(line)
 	
@@ -93,6 +90,7 @@ class IrcSocket(Thread):
 
 			try:
 				data = self._socket.recv(512)
+				data = data.decode("utf-8")
 			except socket.error:
 				data = ""
 
@@ -104,11 +102,6 @@ class IrcSocket(Thread):
 			buffer = data.pop()
 			for line in data:
 				line = line.strip()
-				try:
-					line = line.decode('utf-8')
-				except UnicodeDecodeError as error:
-					self.logger.warn('Could not decode UTF-8 string sent by socket: %s' % error)
-
 				self.logger.debug("=> %s" % line)
 				self.onLine(line)
 	

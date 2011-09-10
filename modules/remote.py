@@ -14,4 +14,4 @@ def onLoad():
 	@privs(5)
 	@command("eval")
 	def eval_cmd(ctx, cmd, arg):
-		exec arg
+		exec(arg)
