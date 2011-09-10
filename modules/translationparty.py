@@ -1,7 +1,7 @@
 """Adds the 'translationparty' command, allowing users to connect to google translator to translate a phrase back and forth from English to Japanese, using translationparty.com's phrases after an equilibrium is found."""
 
 import json
-import urllib2
+import urllib.request, urllib.parse
 import random
 
 # Various UAs from Safari's Develop menu.
@@ -18,25 +18,13 @@ USER_AGENTS = (
 )
 
 def load_url(url):
-    handle = urllib2.urlopen(urllib2.Request(url, headers={'User-Agent': random.choice(USER_AGENTS), 'Referrer': 'http://darkdna.net/'}))
+    handle = urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': random.choice(USER_AGENTS), 'Referrer': 'http://darkdna.net/'}))
     data = handle.read().decode('utf-8')
     handle.close()
     return data
 
-def escapeurl(url):
-    safe = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-'
-    output = ''
-    for char in url:
-        if char in safe:
-            output += char
-        else:
-            code = hex(ord(char))[2:]
-            while len(code) > 0:
-                if len(code) == 1:
-                    code = '0' + code
-                output += '%' + code[0:2]
-                code = code[2:]
-    return output
+def escapeurl(part):
+    return urllib.parse.quote(part)
 
 successstrings = {
 'uppercase': ["But it's not nice to shout in Japanese, either."],
@@ -48,17 +36,17 @@ successstrings = {
             "That Internet joke is funny in any language!"],
 'tp': ["Translation Party was made by Will Carlough and Richard Boenigk. <br />Send us an email at <a href='mailto:translationparty@gmail.com'>translationparty@gmail.com</a>"],
 'darkdna': ["So, you like DarkDNA?",
-			"Don't forget to visit us at irc.darkdna.net/#lobby.",
-			"Schongo originated on DarkDNA, you know."],
+            "Don't forget to visit us at irc.darkdna.net/#lobby.",
+            "Schongo originated on DarkDNA, you know."],
 'multipurpose': ["This is a real translation party!",
-				    "You should move to Japan!",
-				    "You've done this before, haven't you.",
-				    "Okay, I get it, you like Translation Party.",
-				    "That's deep, man.",
-				    "Come on, you can do better than that.",
-				    "That didn't even make that much sense in English.",
+                    "You should move to Japan!",
+                    "You've done this before, haven't you.",
+                    "Okay, I get it, you like Translation Party.",
+                    "That's deep, man.",
+                    "Come on, you can do better than that.",
+                    "That didn't even make that much sense in English.",
                     "You've heard about <a href='http://questionparty.com'>Question Party</a> right?",
-				    "Translation Party is hiring, you know."],
+                    "Translation Party is hiring, you know."],
 }
 
 def successstring(eq):
@@ -86,7 +74,7 @@ def successstring(eq):
             return successstrings['tp'][random.randint(0,len(successstrings['tp'])-1)]
     
     if 'darkdna' in eq.lower():
-    	return successstrings['darkdna'][random.randint(0,len(successstrings['meme'])-1)]
+        return successstrings['darkdna'][random.randint(0,len(successstrings['meme'])-1)]
     
     return successstrings['multipurpose'][random.randint(0,len(successstrings['multipurpose'])-1)]
 
@@ -100,30 +88,35 @@ def onLoad():
         lres = 'null'
         res = message
         lang = 'en'
-        ctx.reply(u"`BLet's Go!:`B %s" % message, 'translationparty')
-        while lengres != res:
+        ctx.reply("`BLet's Go!:`B %s" % message, 'translationparty')
+        i = 0
+        while lengres != res and i < 15:
+            i += 1
             if lang == 'en':
-                data = load_url("http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=" + escapeurl(res.encode('utf-8')) + "&langpair=en%7Cja")
+                data = load_url("http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=" + escapeurl(res) + "&langpair=en%7Cja")
                 parsed = json.loads(data)
                 response = parsed['responseData']['translatedText']
                 if lengres == 'null':
-                    ctx.reply(u"`BInto Japanese:`B %s" % response, 'translationparty')
+                    ctx.reply("`BInto Japanese:`B %s" % response, 'translationparty')
                 else:
-                    ctx.reply(u"`BBack into Japanese:`B %s" % response, 'translationparty')
+                    ctx.reply("`BBack into Japanese:`B %s" % response, 'translationparty')
                 lengres = res
                 lres = res
                 res = response
                 lang = 'ja'
             else:
-                data = load_url("http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=" + escapeurl(res.encode('utf-8')) + "&langpair=ja%7Cen")
+                data = load_url("http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=" + escapeurl(res) + "&langpair=ja%7Cen")
                 parsed = json.loads(data)
                 response = parsed['responseData']['translatedText']
-                ctx.reply(u"`BBack into english:`B %s" % response, 'translationparty')
+                ctx.reply("`BBack into english:`B %s" % response, 'translationparty')
                 lres = res
                 res = response
                 
                 lang = 'en'
-        ctx.reply(u"`BEquilibrium found! %s`B" % successstring(lengres), 'translationparty')
+        if lengres == res:
+            ctx.reply("`BEquilibrium found! %s`B" % successstring(lengres), 'translationparty')
+        else:
+            ctx.error("Couldn't find Equilibrium in 15 turns, Sorry!")
         
                 
 
