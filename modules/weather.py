@@ -3,7 +3,7 @@
 A weather forcast module that works using the weather underground api
 """
 import xml.dom.minidom as dom
-import urllib
+import urllib.request
 
 __info__ = {
 	"Author": "Ross Delinger",
@@ -29,18 +29,18 @@ def onLoad():
 		if arg in airportCache:
 			airport = airportCache[arg]
 		else:
-			xml = dom.parse(urllib.urlopen(lookupURL % arg))
+			xml = dom.parse(urllib.request.urlopen(lookupURL % arg))
 			airport = xml.getElementsByTagName("station")[0].getElementsByTagName("icao")[0].firstChild.data
 
 			airportCache[arg] = airport
 
-		xml = dom.parse(urllib.urlopen(weatherURL % airport))
+		xml = dom.parse(urllib.request.urlopen(weatherURL % airport))
 
-		resp = u"Current Conditions from %s" % xml.getElementsByTagName("observation_location")[0].getElementsByTagName("full")[0].firstChild.data
+		resp = "Current Conditions from %s" % xml.getElementsByTagName("observation_location")[0].getElementsByTagName("full")[0].firstChild.data
 
-		resp += u" • %s" % xml.getElementsByTagName("weather")[0].firstChild.data
-		resp += u" • Temperature: %s" % xml.getElementsByTagName("temperature_string")[0].firstChild.data
-		resp += u" • Winds: %s" % xml.getElementsByTagName("wind_string")[0].firstChild.data
+		resp += " • %s" % xml.getElementsByTagName("weather")[0].firstChild.data
+		resp += " • Temperature: %s" % xml.getElementsByTagName("temperature_string")[0].firstChild.data
+		resp += " • Winds: %s" % xml.getElementsByTagName("wind_string")[0].firstChild.data
 
 		ctx.reply(resp, "Weather")
 
@@ -49,7 +49,7 @@ def onLoad():
 	def forecast(ctx, cmd, arg, *args):
 			"""weather <city>\nReturns the current forcast for the given area should be able to take area code or city"""
 			url = forecastURL % arg
-			page = urllib.urlopen(url)
+			page = urllib.request.urlopen(url)
 			xml = dom.parse(page)
 			titles = xml.getElementsByTagName('title')
 			forcasts = xml.getElementsByTagName('fcttext')
