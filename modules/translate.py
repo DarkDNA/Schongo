@@ -1,31 +1,18 @@
 """Translation module for Schongo."""
 
-import urllib
+import urllib.request, urllib.parse
 import re
 import json
-from _utils import unescapeHtml
-
-def jsonLoad(fp):
-	if hasattr(json, "load"):
-		# Proper json module 2.6+
-		return json.load(fp)
-	elif hasattr(json, "read"):
-		# python-support hack
-		return json.read(fp.read())
-	else:
-		return {
-		"data": { "translations": {
-			"tranlatedText": "JSON Error, please contact bot admininstrator."
-		}}};
+from modules._utils import unescapeHtml
 
 def translate(what, src=None, target="en"):
-	url = "https://www.googleapis.com/language/translate/v2?key=%s&target=%s" % (urllib.quote(cfg.get("key")), target);
+	url = "https://www.googleapis.com/language/translate/v2?key=%s&target=%s" % (urllib.parse.quote(cfg.get("key")), target);
 	if src is not None:
-		url += "&source=" + urllib.quote(src);
-	url += "&q=" + urllib.quote(what.encode("utf-8"))
+		url += "&source=" + urllib.parse.quote(src);
+	url += "&q=" + urllib.parse.quote(what)
 
-	f = urllib.urlopen(url);
-	data = jsonLoad(f);
+	f = urllib.request.urlopen(url);
+	data = json.loads(f.read().decode("utf-8"))
 
 	if "detectedSourceLanguage" in data["data"]["translations"][0]:
 		return data["data"]["translations"][0]["detectedSourceLanguage"], data["data"]["translations"][0]["translatedText"]
@@ -40,9 +27,10 @@ def onLoad():
 
 	languages = []
 
-	url = "https://www.googleapis.com/language/translate/v2/languages?key=%s" % urllib.quote(cfg.get("key"))
-	f = urllib.urlopen(url)
-	data = jsonLoad(f)
+	url = "https://www.googleapis.com/language/translate/v2/languages?key=%s" % urllib.parse.quote(cfg.get("key"))
+
+	f = urllib.request.urlopen(url)
+	data = json.loads(f.read().decode("utf-8"))
 
 	for i in data["data"]["languages"]:
 		languages.append(i["language"])
