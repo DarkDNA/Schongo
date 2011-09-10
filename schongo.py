@@ -43,6 +43,7 @@ class SchongoClient(IrcClient):
 				return None
 
 
+		self.user_modes = get("user modes")
 
 		self._ns_name = get("nickserv name")
 		self._ns_pass = get("nickserv password")
@@ -86,8 +87,11 @@ class SchongoClient(IrcClient):
 
 	# Overrides IrcClient, and calls super	
 	def onConnected(self):
-
 		IrcClient.onConnected(self)
+
+		if self.user_modes is not None:
+			self.sendMessage("MODE", self.nick, self.user_modes)
+
 		modules.fire_hook("connected", self)
 		for i in self.channels:
 			self.join_channel(i)	

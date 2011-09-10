@@ -175,7 +175,7 @@ class IrcClient(IrcSocket):
 	def notice(self, target, msg):
 		self.sendMessage("NOTICE", target, end=msg)
 	
-	def part_channel(self, channel, reason=None):
+	def part_channel(self, channel, reason="Bye!"):
 		self.sendMessage("PART", channel, end=reason)
 	
 	def setTopic(self, channel, topic):
