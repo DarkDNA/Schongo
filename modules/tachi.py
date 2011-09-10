@@ -5,7 +5,7 @@ It spams random blurbs and twitter posts all the time
 Its purpose here is to spit out rss feed updates
 """
 import xml.dom.minidom as dom
-import urllib2
+import urllib.request
 import re
 __info__ = {
 	"Author": "Ross Delinger",
@@ -28,9 +28,9 @@ def remove_html_tags(data):
     return p1.sub('',htmlRemoved)
     
 def formatDesc(fullDesc):
-	stepOne = re.sub('<img.*alt="([^"]+)".* />', '\\1', fullDesc)# get just the alt
-	words = stepOne.split(' ')
-	finalDesc = remove_html_tags(' '.join(words[:(len(words) / 2)]))
+	stepOne = re.sub('<img.*alt="([^"]+)".* />', '[\\1]', fullDesc)# get just the alt
+	#words = stepOne.split(' ')
+	finalDesc = remove_html_tags(stepOne) #' '.join(words[:(len(words) / 2)]))
 	if len(finalDesc) > 350:
 		finalDesc = finalDesc[:350].replace('\n','')
 	finalDesc = '\"%s...\"' % finalDesc
@@ -41,7 +41,7 @@ def sendUpdateToIRC(feed, xml, title):
 	ctx = IrcContext(dataList[1], dataList[2], None)
 	link = xml.getElementsByTagName("link")[1].firstChild.data
 	desc = formatDesc(xml.getElementsByTagName('description')[1].firstChild.data)
-	ctx.reply(u'New post: %s • %s • %s' % (title, link, desc), dataList[0])
+	ctx.reply('New post: %s • %s • %s' % (title, link, desc), dataList[0])
 	lastTitles[feed] = title
 
 def onLoad():
@@ -51,7 +51,7 @@ def onLoad():
 		feedList = feeds.values()
 		for feed in feedList:
 			if feed is not None:
-				site = urllib2.urlopen(feed)
+				site = urllib.request.urlopen(feed)
 				xml = dom.parse(site)
 				title = xml.getElementsByTagName("title")[1].firstChild.data
 				
@@ -66,7 +66,7 @@ def onLoad():
 	@command("feed add", 2, 2)
 	def feed_add(ctx, cmd, arg, name, feed, *args):
 		"""feed add <feed name> <feed url>\nAdd a feed to monitor"""
-		if not feeds.has_key(name):
+		if name not in feeds:
 			feeds[name] = feed
 			feedData[feed] = [name, ctx.irc.network, ctx.chan]
 			lastTitles[feed] = ""
@@ -77,9 +77,9 @@ def onLoad():
 	@command("feed force", 1, 1)
 	def feed_force(ctx, cmd, arg, name, *args):
 		"""feed force <feed name>\nForce the given feed to be updated"""
-		if feeds.has_key(name):
+		if name in feeds:
 			feed = feeds[name]
-			site = urllib2.urlopen(feed)
+			site = urllib.request.urlopen(feed)
 			xml = dom.parse(site)
 			title = xml.getElementsByTagName("title")[1].firstChild.data
 			sendUpdateToIRC(feed, xml, title)
@@ -89,7 +89,7 @@ def onLoad():
 	@command("feed remove", 1, 1)
 	def feed_remove(ctx, cmd, arg, name, *args):
 		"""feed remove <feed name>\nRemove the given feed"""
-		if feeds.has_key(name):
+		if name in feeds:
 			feed = feeds[name]
 			del feedData[feed]
 			del feeds[name]
