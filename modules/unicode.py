@@ -10,7 +10,7 @@ __info__ = {
 }
 
 abbrTable = {
-	"Lu": "Uppercase Letter",
+	"L": "Uppercase Letter",
 	"Ll": "Lowercase Letter",
 	"Lt": "Titlecase Letter",
 	"Lo": "Other Letter",
@@ -60,10 +60,10 @@ Searches for information on the given char or, does an exact-match search for a 
 		cat = unicodedata.category(char)
 		num = ord(char)
 		
-		if abbrTable.has_key(cat):
+		if cat in abbrTable:
 			cat = abbrTable[cat]
 		else:
 			cat = "Unknown Category(%s)" % cat
 
-		ctx.reply(u"Char %s • U+%04X •  %s • %s" % (char, num, name, cat), "Unicode")
+		ctx.reply("Char %s • U+%04X • %s • %s" % (char, num, name, cat), "Unicode")
 			
