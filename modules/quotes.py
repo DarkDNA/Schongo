@@ -51,7 +51,7 @@ def onLoad():
 			ctx.error("No such quote")
 			return
 		
-		ctx.reply("Quote #%d:" % (qnum + 1), "Quote DB")
+		ctx.reply("Quote #{}:".format(qnum + 1), "Quote DB")
 		ctx.reply(quote, "Quote DB")
 	
 				
@@ -60,11 +60,10 @@ def onLoad():
 	def remember_cmd(ctx, cmd, arg, who, *args):
 		global buffer
 		what = ' '.join(args)
-
 		# Split to get the participants
 		#  If there is no instance of the seperator, it returns the string untouched
-		who = who.split(',')
-
+		who = [w.lower() for w in who.split(',')]
+		
 		# Start ... end quote
 		p = what.split(' -to ', 2)
 		start = p[0]
@@ -73,7 +72,7 @@ def onLoad():
 		else:
 			end = ""
 
-		chanbuff = buffer["%s->%s" % (ctx.irc.network, ctx.chan)]
+		chanbuff = buffer["{}->{}".format(ctx.irc.network, ctx.chan)]
 
 		quote = []
 
@@ -81,7 +80,7 @@ def onLoad():
 
 		for w,type,line in chanbuff:
 			if w in who:
-				logger.debug("Processing line from %s: %s", w, line)
+				logger.debug("Processing line from {}: {}".format(w, line))
 
 				if not record:
 					if start in line:
@@ -91,47 +90,48 @@ def onLoad():
 						logger.debug("Skipping line")
 						continue
 
-				fmt = "<%s> %s"
+				fmt = "<{}> {}"
 
 				if type == "action":
-					fmt = "* %s %s"
+					fmt = "* {} {}"
 
-				quote.append(fmt % (w, line))
+				quote.append(fmt.format(w, line))
 
 				if end in line or end == "":
 					logger.debug("Ending quote")
 					break
 		
 		quotes.append('\n'.join(quote))
-		ctx.reply("Remembered quote #%d" % len(quotes))
+		ctx.reply("Remembered quote #{}".format(len(quotes)))
 
 	@hook("action")
 	def action_hook(ctx, msg):
 		try:
-			buf = buffer["%s->%s" % (ctx.irc.network, ctx.chan)]
+			buf = buffer["{}->{}".format(ctx.irc.network, ctx.chan)]
 		except:
 			buf = []
 	
-		buf.append((ctx.who.nick, 'action', msg))
+		buf.append((ctx.who.nick.lower(), 'action', msg))
 
 		# Epic happy funtime buffer limiting
 		while len(buf) > 50:
 			buf.pop(0)
 
-		buffer["%s->%s" % (ctx.irc.network, ctx.chan)] = buf
+		buffer["{}->{}".format(ctx.irc.network, ctx.chan)] = buf
 		
 	
 	@hook("message")
 	def message_hook(ctx, msg):
 		try:
-			buf = buffer["%s->%s" % (ctx.irc.network, ctx.chan)]
+			buf = buffer["{}->{}".format(ctx.irc.network, ctx.chan)]
 		except:
 			buf = []
 	
-		buf.append((ctx.who.nick, 'message', msg))
+		buf.append((ctx.who.nick.lower(), 'message', msg))
 
 		# Epic happy funtime buffer limiting
 		while len(buf) > 50:
 			buf.pop(0)
 
-		buffer["%s->%s" % (ctx.irc.network, ctx.chan)] = buf
+		buffer["{}->{}".format(ctx.irc.network, ctx.chan)] = buf
+		
