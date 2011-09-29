@@ -96,7 +96,7 @@ class IrcSocket(Thread):
 					try:
 						data = data.decode("ascii")
 					except UnicodeDecodeError:
-						selg.logger.error("Couldn't decode line %s", data)
+						self.logger.error("Couldn't decode line %s", data)
 						data = " "
 			except socket.error:
 				data = ""
