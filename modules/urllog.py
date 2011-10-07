@@ -5,7 +5,7 @@ import urllib.request
 import urllib.error
 import xml.dom.minidom as dom
 import re
-from modules._utils import prettyNumber, prettyTime
+from modules._utils import prettyNumber, prettyTime, unescapeHtml
 import threading
 
 archive = dict()
@@ -89,7 +89,7 @@ def showTitle(ctx, url):
 
 	titleSearch = titleRegEx.search(stuff)
 	if titleSearch is not None:
-		s += " • Title: %s" % titleSearch.group(1)
+		s += " • Title: %s" % unescapeHtml(titleSearch.group(1))
 	elif mime in titleMimes:
 		s += " • Could not find title."
 

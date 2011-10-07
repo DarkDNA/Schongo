@@ -3,7 +3,7 @@ import subprocess as subProc
 import os
 import threading
 import time
-import html.parser
+import html.entities
 import re
 
 htmlre = re.compile("&([^;]+);")
@@ -57,13 +57,19 @@ def listify(list, useand=False):
 
 	return result
 
-def unescapeHtml(html):
+def unescapeHtml(s):
 	def blah(match):
-		bla = match.group(1)
+		bla = match.group(1).lower()
 		if bla in html.entities.entitydefs:
 			return html.entities.entitydefs[bla]
-		return chr(int(match.group(1)))
-	return htmlre.sub(blah, html)
+		elif bla[0] == '#':
+			try:
+				return chr(int(bla[1:]))
+			except ValueError:
+				return ''
+		else:
+			return ''
+	return htmlre.sub(blah, s)
 
 
 class procThread(threading.Thread):
