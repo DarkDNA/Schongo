@@ -61,7 +61,7 @@ def unescapeHtml(s):
 	def blah(match):
 		bla = match.group(1).lower()
 		if bla in html.entities.entitydefs:
-			return html.entities.entitydefs[bla]
+			return chr(html.entities.name2codepoint[bla])
 		elif bla[0] == '#':
 			try:
 				return chr(int(bla[1:]))

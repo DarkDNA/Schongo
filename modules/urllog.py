@@ -57,11 +57,14 @@ def showTitle(ctx, url):
 
 	s = "Url: %s" % url
 
+	encoding = None
+	
 	try:
 		u = urllib.request.urlopen(url)
-		stuff = u.read(READ_SIZE).decode("utf-8")
+		stuff = u.read(READ_SIZE)
 		newurl = u.url
 		mime = u.info().get_content_type()
+		encoding = u.info().get_param("charset")
 		u.close()
 	except urllib.error.HTTPError as e:
 		# Intentionally not adding this to the archive, no point spamming unparsable URLs
@@ -73,6 +76,9 @@ def showTitle(ctx, url):
 		ctx.reply(s, "UrlLog")
 		return
 
+	if encoding is None:
+		encoding = "utf-8"
+	
 	# Look again after reading it in, to see if it is a shortened youtube url.
 
 	m = ytRegEx.match(newurl)
@@ -87,11 +93,14 @@ def showTitle(ctx, url):
 	if mime not in titleMimes:
 		s += " • MIME type: %s" % mime
 
-	titleSearch = titleRegEx.search(stuff)
-	if titleSearch is not None:
-		s += " • Title: %s" % unescapeHtml(titleSearch.group(1))
-	elif mime in titleMimes:
-		s += " • Could not find title."
+	if mime in titleMimes:
+		stuff = stuff.decode(encoding)
+
+		titleSearch = titleRegEx.search(stuff)
+		if titleSearch is not None:
+			s += " • Title: %s" % unescapeHtml(titleSearch.group(1))
+		else:
+			s += " • Could not find title."
 
 	addStatusToArchive(ctx,s,"UrlLog")
 
