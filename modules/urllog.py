@@ -21,6 +21,8 @@ __info__ = {
 
 
 ytRegEx = re.compile(r"(https?://)?(www\.)?youtu(be\.com/watch\?[^ ]*v=|\.be/)([^& ]+)")
+twitterRegEx = re.compile(r"(https?://)?twitter.com/(#!/)?[a-zA-Z0-9_]+/status/(\d+)")
+
 genRegEx = re.compile(r"https?://([^ ]+)")
 titleRegEx = re.compile(r"<title>(.+)</title>")
 titleMimes = [ "text/html" ]
@@ -55,6 +57,11 @@ def showTitle(ctx, url):
 		showYouTube(ctx, ytMatch.group(4))
 		return
 
+	twitMatch = twitterRegEx.match(url)
+	if twitMatch:
+		showTwitter(ctx, twitMatch.group(3))
+		return
+
 	s = "Url: %s" % url
 
 	encoding = None
@@ -86,6 +93,11 @@ def showTitle(ctx, url):
 		showYouTube(ctx, m.group(4))
 		return
 
+	twitMatch = twitterRegEx.match(newurl)
+	if twitMatch:
+		showTwitter(ctx, twitMatch.group(3))
+		return
+
 
 	if newurl != url:
 		s += " • Redirects to: %s" % newurl
@@ -108,11 +120,38 @@ def showTitle(ctx, url):
 		
 
 def showYouTube(ctx, video_id):
-	
-	meta = urllib.request.urlopen("http://gdata.youtube.com/feeds/api/videos/%s" % video_id)
-	meta = dom.parse(meta) #meta.read()
-	
-	return displayMeta(ctx, meta, video_id)
+	try:	
+		meta = urllib.request.urlopen("http://gdata.youtube.com/feeds/api/videos/%s" % video_id)
+		meta = dom.parse(meta) #meta.read()
+		return displayMeta(ctx, meta, video_id)
+	except urllib.error.HTTPError:
+		ctx.reply("Invalid youtube URL", "YouTube")
+		return
+
+def showTwitter(ctx, tweet_id):
+	try:	
+		data = urllib.request.urlopen("https://api.twitter.com/1/statuses/show/%s.xml" % tweet_id)
+		data = dom.parse(data) #data.read()
+		return displayTweet(ctx, data, tweet_id)
+	except urllib.error.HTTPError:
+		ctx.reply("Invalid twitter URL", "Twitter")
+		return
+
+# ---------------------------------------
+#       Lookup Functions
+# ---------------------------------------
+
+def xmlText(parent, name):
+	elem = xmlChild(parent, name)
+	if elem is None:
+		return None
+	return elem.firstChild.data
+
+def xmlChild(parent, name):
+	elems = parent.getElementsByTagName(name)
+	if len(elems) > 0:
+		return elems[0]
+	return None
 
 def displayMeta(ctx, data, vid):
 	"""Displays a single youtube video result, given the xml node"""
@@ -151,6 +190,25 @@ def displayMeta(ctx, data, vid):
 	addStatusToArchive(ctx, s, "YouTube")
 	ctx.reply(s, "YouTube")
 
+def displayTweet(ctx, data, tweet_id):
+	s = "Tweet: "
+
+	retweeted = xmlChild(data, "retweeted_status")
+	if retweeted is not None:
+		s += "RT @%s %s" % ( xmlText(retweeted, "screen_name"), xmlText(retweeted, "text"))
+	else:
+		s += xmlText(data, "text")
+	
+	user = xmlChild(data, "user")
+
+	s += " • Tweeted by: @%s ( %s )" % ( xmlText(user, "screen_name"), xmlText(user, "name"))
+	if retweeted is not None:
+		s += " • Original retweeted %s times" % xmlText(retweeted, "retweet_count")
+	else:
+		s += " • Retweets: %s" % xmlText(data, "retweet_count")
+
+	addStatusToArchive(ctx, s, "Twitter")
+	ctx.reply(s, "Twitter")
 
 class LookupThread(threading.Thread):
 	def __init__(self, ctx, msg):
