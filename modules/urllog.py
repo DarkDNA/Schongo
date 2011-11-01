@@ -137,9 +137,11 @@ def showTwitter(ctx, tweet_id):
 		ctx.reply("Invalid twitter URL", "Twitter")
 		return
 
+
 # ---------------------------------------
-#       Lookup Functions
+#       XML Helpers.
 # ---------------------------------------
+
 
 def xmlText(parent, name):
 	elem = xmlChild(parent, name)
@@ -147,12 +149,19 @@ def xmlText(parent, name):
 		return None
 	return elem.firstChild.data
 
+# This has to get the first child this way because getElementsByTagName does 
+# depth-first search, confusing data for the twitter handling
 def xmlChild(parent, name):
-	elems = parent.getElementsByTagName(name)
-	if len(elems) > 0:
-		return elems[0]
+	for c in parent.childNodes:
+		if c.nodeName == name:
+			return c
 	return None
 
+# ---------------------------------------
+#       Lookup Functions
+# ---------------------------------------
+
+#TODO: Convert this into using the xml helpers above
 def displayMeta(ctx, data, vid):
 	"""Displays a single youtube video result, given the xml node"""
 	
@@ -193,15 +202,23 @@ def displayMeta(ctx, data, vid):
 def displayTweet(ctx, data, tweet_id):
 	s = "Tweet: "
 
+	data = xmlChild(data, "status")
+
 	retweeted = xmlChild(data, "retweeted_status")
 	if retweeted is not None:
-		s += "RT @%s %s" % ( xmlText(retweeted, "screen_name"), xmlText(retweeted, "text"))
+		retweeted_user = xmlChild(retweeted, "user")
+		s += "RT @%s %s" % ( xmlText(retweeted_user, "screen_name"), xmlText(retweeted, "text"))
 	else:
 		s += xmlText(data, "text")
-	
+
 	user = xmlChild(data, "user")
 
-	s += " • Tweeted by: @%s ( %s )" % ( xmlText(user, "screen_name"), xmlText(user, "name"))
+	if retweeted:
+		maybeRe = "Ret"
+	else:
+		maybeRe = "T"
+
+	s += " • %sweeted by: @%s ( %s )" % ( maybeRe, xmlText(user, "screen_name"), xmlText(user, "name"))
 	if retweeted is not None:
 		s += " • Original retweeted %s times" % xmlText(retweeted, "retweet_count")
 	else:
