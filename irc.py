@@ -168,6 +168,8 @@ class IrcClient(IrcSocket):
 		if ident is not None:
 			self.ident = ident
 
+		self.supportsData = {}
+
 	# Our API.
 	
 	def join_channel(self, channel, password=None):
@@ -234,6 +236,30 @@ class IrcClient(IrcSocket):
 		
 	
 	# IRC Events
+
+	SUPPORT_INTS = ['NICKLEN', 'CHANNELLEN', 'AWAYLEN', 
+					'TOPICLEN', 'KICKLEN', 'MAXCHANNELS',
+					'WATCH', 'SILENCE', 'MODES', 'MAXTARGETS']
+
+	SUPPORT_LISTS = ['CHANMODES', 'CMDS']
+
+	def _iSupport(self, what):
+		for i in what:
+			if '=' in i:
+				name, value = i.split('=', 2)
+				value = self._supportValue(name, value)
+				self.supportsData[name] = value
+			else:
+				self.supportsData[i] = True
+
+	def _supportValue(self, name, value):
+
+		if name in self.SUPPORT_INTS:
+			return int(value)
+		if name in self.SUPPORT_LISTS:
+			return value.split(',')
+		
+		return value
 	
 	def onMessage(self, msg):
 		if msg.command == "NICK":
@@ -295,6 +321,8 @@ class IrcClient(IrcSocket):
 		elif msg.command == "001":
 			# We've successfuly connected, partay!
 			self.onConnected()
+		elif msg.command == "005":
+			self._iSupport(msg.args[0:-2])
 		elif msg.command == "TOPIC":
 			channel = msg.args[0]
 			topic = msg.args[1]
