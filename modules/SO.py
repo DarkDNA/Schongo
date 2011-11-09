@@ -6,7 +6,7 @@ import json
 import gzip
 
 
-from StringIO import StringIO
+from io import StringIO
 from _utils import prettyNumber
 
 __info__ = {
