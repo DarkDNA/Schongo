@@ -60,6 +60,6 @@ def onLoad():
 		for q in decoded['questions']:
 			title = q['title']
 			questionURL = qURL.format('questions', q['question_id'])
-			ctx.reply(u'{} • {}'.format(title, questionURL), 'StackOverflow')
+			ctx.reply('{} • {}'.format(title, questionURL), 'StackOverflow')
 				
 			
