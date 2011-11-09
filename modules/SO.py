@@ -15,9 +15,9 @@ __info__ = {
 	"Dependencies": []
 }
 
-baseURL = "http://%s.%s.com%s"
-apiURL = baseURL % ('api','stackoverflow','/1.0/%s')
-qURL = baseURL % ('www','stackoverflow','/%s/%s') 
+baseURL = "http://{}.{}.com{}"
+apiURL = baseURL.format('api','stackoverflow','/1.0/{}')
+qURL = baseURL.format('www','stackoverflow','/{}/{}') 
 
 def jsonLoad(fp):
 	if hasattr(json, "load"):
@@ -38,8 +38,8 @@ def onLoad():
 		"""so <tag1> <tag2> <etc>\nSearch through stackoverflow for the given tags"""
 		thingy = ";".join(args)
 
-		bunnies = 'search?tagged=%s&pagesize=3' % thingy
-		searchURL = apiURL % bunnies
+		bunnies = 'search?tagged={}&pagesize=3'.format(thingy)
+		searchURL = apiURL.format(bunnies)
 
 		urlObject = urllib2.urlopen(searchURL)
 		urlObject = StringIO(urlObject.read()) # Ugly hack because we can't .read() from the gzip otherwise
@@ -52,14 +52,14 @@ def onLoad():
 
 		if results > 0:
 			res = min(results, 3)
-			ctx.reply("Results 1-%d of %s" % (res, prettyNumber(results)), "StackOverflow")
+			ctx.reply("Results 1-{} of {}".format(res, prettyNumber(results)), "StackOverflow")
 		else:
 			ctx.reply("No results for your query", "StackOverflow")
 		
 
 		for q in decoded['questions']:
 			title = q['title']
-			questionURL = qURL % ('questions', q['question_id'])
-			ctx.reply(u'%s • %s' % (title, questionURL), 'StackOverflow')
+			questionURL = qURL.format('questions', q['question_id'])
+			ctx.reply(u'{} • {}'.format(title, questionURL), 'StackOverflow')
 				
 			
