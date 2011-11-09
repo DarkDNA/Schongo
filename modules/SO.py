@@ -42,7 +42,7 @@ def onLoad():
 		searchURL = apiURL.format(bunnies)
 
 		urlObject = request.urlopen(searchURL)
-		urlObject = StringIO(urlObject.read()) # Ugly hack because we can't .read() from the gzip otherwise
+		urlObject = StringIO(str(urlObject.read())) # Ugly hack because we can't .read() from the gzip otherwise
 		urlObject = gzip.GzipFile(fileobj=urlObject) # Stack Overflow compresseses
 
 
