@@ -1,7 +1,7 @@
 # coding=utf-8
 """ Interface with the Stack Exchange API Current only supports stackoverflow others may follow""" 
 
-import urllib2
+from urllib import request
 import json
 import gzip
 
@@ -11,7 +11,7 @@ from _utils import prettyNumber
 
 __info__ = {
 	"Author": "Ross Delinger",
-	"Version": "1.0.2",
+	"Version": "1.1.0",
 	"Dependencies": []
 }
 
@@ -41,7 +41,7 @@ def onLoad():
 		bunnies = 'search?tagged={}&pagesize=3'.format(thingy)
 		searchURL = apiURL.format(bunnies)
 
-		urlObject = urllib2.urlopen(searchURL)
+		urlObject = request.urlopen(searchURL)
 		urlObject = StringIO(urlObject.read()) # Ugly hack because we can't .read() from the gzip otherwise
 		urlObject = gzip.GzipFile(fileobj=urlObject) # Stack Overflow compresseses
 
