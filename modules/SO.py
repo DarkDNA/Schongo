@@ -7,7 +7,7 @@ import gzip
 
 
 from io import StringIO
-from _utils import prettyNumber
+from modules._utils import prettyNumber
 
 __info__ = {
 	"Author": "Ross Delinger",
