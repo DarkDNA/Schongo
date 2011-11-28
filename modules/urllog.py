@@ -21,7 +21,7 @@ __info__ = {
 
 
 ytRegEx = re.compile(r"(https?://)?(www\.)?youtu(be\.com/watch\?[^ ]*v=|\.be/)([^& ]+)")
-twitterRegEx = re.compile(r"(https?://)?twitter.com/(#!/)?[a-zA-Z0-9_]+/status/(\d+)")
+twitterRegEx = re.compile(r"(https?://)?twitter.com/(#!)?[a-zA-Z0-9_]+/status/(\d+)")
 
 genRegEx = re.compile(r"https?://([^ ]+)")
 titleRegEx = re.compile(r"<title>(.+)</title>")
