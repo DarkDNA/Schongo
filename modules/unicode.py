@@ -10,7 +10,7 @@ __info__ = {
 }
 
 abbrTable = {
-	"L": "Uppercase Letter",
+	"Lu": "Uppercase Letter",
 	"Ll": "Lowercase Letter",
 	"Lt": "Titlecase Letter",
 	"Lo": "Other Letter",
