@@ -10,7 +10,7 @@ from time import time
 import json
 __info__ = {
 	"Author": "Ross Delinger",
-	"Version": "1.0",
+	"Version": "1.1",
 	"Dependencies": [
 		"_timer"
 	]
