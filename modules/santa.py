@@ -27,7 +27,7 @@ def onLoad():
     @timer(60,True)
     def updateTimer():
         global lastLoc
-        currentTotal = (int(time()) - 1293174000) / 60;
+        currentTotal = (int(time()) - 1324710000) / 60;
 
         for stop in locList:
             t = stop['time'].split(':')
