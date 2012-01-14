@@ -29,7 +29,6 @@ def onLoad():
 		#xml = dom.parse(urllib.request.urlopen(weatherURL % (key, urllib.parse.quote(arg))))
 
 		data = urllib.request.urlopen(weatherURL % (key, urllib.parse.quote(arg))).read().decode("utf8")
-		print(data)
 		data = json.loads(data)
 
 		data = data["current_observation"]
