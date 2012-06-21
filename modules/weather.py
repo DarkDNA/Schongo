@@ -31,13 +31,20 @@ def onLoad():
 		data = urllib.request.urlopen(weatherURL % (key, urllib.parse.quote(arg))).read().decode("utf8")
 		data = json.loads(data)
 
+		if 'current_observation' not in data:
+			ctx.error('Could not locate weather station, please use a Postal code, or a City, State or a City, Country')
+			return
+
 		data = data["current_observation"]
 
 		resp = "Current Conditions from %s" % data["observation_location"]["full"]
 
 		resp += " • %s" % data["weather"]
-		resp += " • Temperature: %s" % data["temperature_string"] #xml.getElementsByTagName("temperature_string")[0].firstChild.data
-		resp += " • Winds: %s" % data["wind_string"] #xml.getElementsByTagName("wind_string")[0].firstChild.data
+		resp += " • Humidity: %s" % data["relative_humidity"]
+		resp += " • Temperature: %s" % data["temperature_string"]
+		resp += " • Winds: %s" % data["wind_string"]
+		resp += " • UV Index: %s" % data["UV"]
+		resp += " • %s" % data['observation_time']
 
 		ctx.reply(resp, "Weather")
 
@@ -48,7 +55,9 @@ def onLoad():
 			"""weather <city>\nReturns the current forcast for the given area should be able to take area code or city"""
 			url = forecastURL % (key, arg)
 			page = urllib.request.urlopen(url)
-			xml = dom.parse(page)
+
+
+			  xml = dom.parse(page)
 			titles = xml.getElementsByTagName('title')
 			forcasts = xml.getElementsByTagName('fcttext')
 			count = 0

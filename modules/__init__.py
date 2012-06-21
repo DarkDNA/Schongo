@@ -366,7 +366,6 @@ def privs(level, *groups):
 		return f
 	return func
 
-
 ### Utility injected code
 
 def injected_util(func):
@@ -409,6 +408,7 @@ def load_cmd(ctx, cmd, arg, *mods):
 		except Exception as e:
 			finalOutput.append("`B%s`B: failed (%s)" % (mod,e))
 			print_exc()
+			unload_module(mod)
 
 	if len(finalOutput) > 0:
 		ctx.reply(', '.join(finalOutput), "Load")
@@ -474,7 +474,7 @@ Spits out information for <command> (If we have any)"""
 		maxarg = theCmd._max
 
 		if minarg != -1 and maxarg == -1:
-				s += "(>%d)" % (minarg - 1)
+				s += "(%d+)" % (minarg - 1)
 		elif minarg == -1 and maxarg == -1:
 			s += "(Any)"
 		elif minarg == 0 and maxarg == 0:
