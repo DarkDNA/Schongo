@@ -558,8 +558,7 @@ def check_command(cmd, lvl, groups):
 			if g in groups:
 				return True
 		return False
-	return True
-
+	return lvl <= 1
 
 def handle_command(ctx, line, parentcmd=None):
 	parts = line.split(' ',1)
