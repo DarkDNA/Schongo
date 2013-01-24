@@ -94,7 +94,10 @@ class IrcContext:
 
 	def error(self, msg):
 		# self.reply(msg, "Error")
-		self.notice(self.who.nick, msg, "Error")
+		if self.who is None:
+			self.reply(msg, err)
+		else:
+			self.notice(self.who.nick, msg, "Error")
 
 	replacables = {
 		'`B': '\x02',
