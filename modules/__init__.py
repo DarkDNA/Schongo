@@ -93,7 +93,8 @@ class IrcContext:
 				self.say(self.chan, line, parse)
 
 	def error(self, msg):
-		self.reply(msg, "Error")
+		# self.reply(msg, "Error")
+		self.notice(self.who.nick, msg, "Error")
 
 	replacables = {
 		'`B': '\x02',
@@ -110,8 +111,21 @@ class IrcContext:
 
 		self.irc.say(chan, msg)
 		
-	def notice(self, msg):
-		self.irc.notice(self.who.nick, msg)
+	def notice(self, who, msg, prefix=None, parse=False):
+		if parse:
+			for k in self.replacables:
+				msg = msg.replace(k, self.replacables[k])
+
+		lines = []
+		nmsg = [ msg ]
+		if '\n' in msg:
+			nmsg = msg.split("\n")
+
+		for line in nmsg:
+			if prefix is not None:
+				line ="[%s] %s" % (prefix, line)
+
+			self.irc.notice(who, line)
 	
 	def ctcp_reply(self, cmd, arg):
 		self.notice("\x01%s %s\x01" % (cmd, arg))
