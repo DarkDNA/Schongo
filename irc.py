@@ -43,9 +43,9 @@ class IrcSocket(Thread):
 
 		self._server = server
 		self._port = port
-		if self._server.startswith('+'):
+		self.ssl = self._server.startswith('+')
+		if self.ssl:
 			self._server = self._server[1:]
-			self.ssl = True
 		self.logger = logging.getLogger("IrcSocket(%s)" % self._server)
 
 	def connect(self):
