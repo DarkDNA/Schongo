@@ -25,7 +25,7 @@ twitterRegEx = re.compile(r"(https?://)?twitter.com/(#!)?[a-zA-Z0-9_]+/status/(\
 
 genRegEx = re.compile(r"https?://([^ ]+)")
 titleRegEx = re.compile(r"<title>(.+)</title>")
-titleMimes = [ "text/html" ]
+titleMimes = [ "text/html", "application/xhtml+xml" ]
 
 def addStatusToArchive(ctx, s, prefix):
 	global archive
@@ -47,9 +47,9 @@ def outputStatusArchive(ctx):
 				ctx.reply(msg, prefix);
 			
 		else:
-			ctx.reply("Empty log", "UrlLog")
+			ctx.reply("Empty log", "URL")
 	else:
-		ctx.reply("Empty log", "UrlLog")
+		ctx.reply("Empty log", "URL")
 
 def showTitle(ctx, url):
 	ytMatch = ytRegEx.match(url)
@@ -62,7 +62,7 @@ def showTitle(ctx, url):
 		showTwitter(ctx, twitMatch.group(3))
 		return
 
-	s = "Url: %s" % url
+	s = "%s" % url
 
 	encoding = None
 	
@@ -76,11 +76,11 @@ def showTitle(ctx, url):
 	except urllib.error.HTTPError as e:
 		# Intentionally not adding this to the archive, no point spamming unparsable URLs
 		s += " • Failed to get information, HTTP Error: %d." % e.code
-		ctx.reply(s, "UrlLog")
+		ctx.reply(s, "URL")
 		return
 	except urllib.error.URLError as e:
 		s += " • Failed to get information: URL Error: %s." % e.reason
-		ctx.reply(s, "UrlLog")
+		ctx.reply(s, "URL")
 		return
 
 	if encoding is None:
@@ -114,9 +114,9 @@ def showTitle(ctx, url):
 		else:
 			s += " • Could not find title."
 
-	addStatusToArchive(ctx,s,"UrlLog")
+	addStatusToArchive(ctx, s, "URL")
 
-	ctx.reply(s, "UrlLog")
+	ctx.reply(s, "URL")
 		
 
 def showYouTube(ctx, video_id):
