@@ -85,7 +85,7 @@ class IrcContext:
 
 		for line in nmsg:
 			if prefix is not None:
-				line ="\x02[ %s ]\x02 %s" % (prefix, line)
+				line ="[%s] %s" % (prefix, line)
 			if self.chan == self.irc.nick:
 				# Private Message
 				self.say(self.who.nick, line, parse)
@@ -172,7 +172,7 @@ def load_module(mod, loadType, level=logging.WARN):
 	
 	# Begin ze actual loadink!
 	
-	theMod = __import__(mod, globals(), locals(), [], -1)
+	theMod = __import__(mod, globals(), locals(), [], 1)
 	modInfo.module = theMod
 
 
