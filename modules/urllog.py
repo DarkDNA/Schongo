@@ -3,6 +3,7 @@
 
 import urllib.request
 import urllib.error
+import urllib.parse
 import xml.dom.minidom as dom
 import re
 from modules._utils import prettyNumber, prettyTime, unescapeHtml
@@ -11,7 +12,7 @@ import threading
 archive = dict()
 
 
-READ_SIZE = 32000;
+READ_SIZE = 32000
 
 __info__ = {
 	"Author": "Selig Arkin",
@@ -62,7 +63,8 @@ def showTitle(ctx, url):
 		showTwitter(ctx, twitMatch.group(3))
 		return
 
-	s = "%s" % url
+	
+	s = pretty_url(url)
 
 	encoding = None
 	
@@ -100,7 +102,7 @@ def showTitle(ctx, url):
 
 
 	if newurl != url:
-		s += " • Redirects to: %s" % newurl
+		s += " • Redirects to: %s" % pretty_url(newurl)
 
 	if mime not in titleMimes:
 		s += " • MIME type: %s" % mime
@@ -136,6 +138,32 @@ def showTwitter(ctx, tweet_id):
 	except urllib.error.HTTPError:
 		ctx.reply("Invalid twitter URL", "Twitter")
 		return
+
+
+# ---------------------------------------
+#       Pretty Pretty
+# ---------------------------------------
+
+def pretty_url(url):
+	if len(url) <= 100:
+		return url
+
+	o = urllib.parse.urlparse(url)
+
+	s = "%s://%s/" % (o.scheme.replace('tt', 't\x02\x02t'), o.netloc)
+
+	if o.path == '':
+		path = []
+	else:
+		path = o.path.split('/')
+
+	
+	if len(path) > 2:
+		s += '.../%s' % path[-1]
+	elif len(path) == 2:
+		s += "%s" % path[1]
+
+	return s
 
 
 # ---------------------------------------
