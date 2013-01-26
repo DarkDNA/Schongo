@@ -69,7 +69,7 @@ def showTitle(ctx, url):
 	encoding = None
 	
 	try:
-		u = urllib.request.urlopen(url)
+		u = get_url(url)
 		stuff = u.read(READ_SIZE)
 		newurl = u.url
 		mime = u.info().get_content_type()
@@ -123,7 +123,7 @@ def showTitle(ctx, url):
 
 def showYouTube(ctx, video_id):
 	try:	
-		meta = urllib.request.urlopen("http://gdata.youtube.com/feeds/api/videos/%s" % video_id)
+		meta = get_url("http://gdata.youtube.com/feeds/api/videos/%s" % video_id)
 		meta = dom.parse(meta) #meta.read()
 		return displayMeta(ctx, meta, video_id)
 	except urllib.error.HTTPError:
@@ -132,7 +132,7 @@ def showYouTube(ctx, video_id):
 
 def showTwitter(ctx, tweet_id):
 	try:	
-		data = urllib.request.urlopen("https://api.twitter.com/1/statuses/show/%s.xml" % tweet_id)
+		data = get_url("https://api.twitter.com/1/statuses/show/%s.xml" % tweet_id)
 		data = dom.parse(data) #data.read()
 		return displayTweet(ctx, data, tweet_id)
 	except urllib.error.HTTPError:
@@ -146,7 +146,7 @@ def showTwitter(ctx, tweet_id):
 
 def pretty_url(url):
 	if len(url) <= 100:
-		return url
+		return url.replace('tt', 't\x02\x02t')
 
 	o = urllib.parse.urlparse(url)
 
@@ -164,6 +164,17 @@ def pretty_url(url):
 		s += "%s" % path[1]
 
 	return s
+
+# ---------------------------------------
+#       LONG LIVE HYPNOTOAD
+# ---------------------------------------
+
+def get_url(url):
+	req = urllib.request.Request(url, None, {
+		"User-Agent": "Schongo/1.0 (http://darkdna.net/; schongo@darkdna.net)"
+	})
+
+	return urllib.request.urlopen(req)
 
 
 # ---------------------------------------
