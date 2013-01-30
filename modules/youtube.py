@@ -45,7 +45,7 @@ def displayMeta(ctx, data, vid):
 		else:
 			s += " • No ratings"
 	
-	s += " • http://youtu.be/%s" % vid
+	s += " • https://youtu.be/%s" % vid
 	ctx.reply(s, "YouTube")
 
 # 
