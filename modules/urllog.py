@@ -145,6 +145,11 @@ def showTwitter(ctx, tweet_id):
 # ---------------------------------------
 
 def pretty_url(url):
+	o = urllib.parse.urlparse(url)
+
+	return o.netloc
+
+def pretty_url_old(url):
 	if len(url) <= 100:
 		return url.replace('tt', 't\x02\x02t')
 
