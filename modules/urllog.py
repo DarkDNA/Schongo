@@ -25,7 +25,7 @@ ytRegEx = re.compile(r"(https?://)?(www\.)?youtu(be\.com/watch\?[^ ]*v=|\.be/)([
 twitterRegEx = re.compile(r"(https?://)?twitter.com/(#!)?[a-zA-Z0-9_]+/status/(\d+)")
 
 genRegEx = re.compile(r"https?://([^ ]+)")
-titleRegEx = re.compile(r"<title>(.+)</title>")
+titleRegEx = re.compile(r"<title[^>]*>*([^<]+)</title>", re.IGNORECASE)
 titleMimes = [ "text/html", "application/xhtml+xml" ]
 
 def addStatusToArchive(ctx, s, prefix):
@@ -112,7 +112,11 @@ def showTitle(ctx, url):
 
 		titleSearch = titleRegEx.search(stuff)
 		if titleSearch is not None:
-			s += " • Title: %s" % unescapeHtml(titleSearch.group(1))
+			title = titleSearch.group(1)
+			title = title.replace("\n", "").replace("\r", "").replace("\t", " ")
+			title = title.strip()
+
+			s += " • Title: %s" % unescapeHtml(title)
 		else:
 			s += " • Could not find title."
 
