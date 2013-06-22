@@ -100,8 +100,7 @@ def showTitle(ctx, url):
 		showTwitter(ctx, twitMatch.group(3))
 		return
 
-
-	if newurl != url:
+	if pretty_url(newurl) != pretty_url(url):
 		s += " • Redirects to: %s" % pretty_url(newurl)
 
 	if mime not in titleMimes:
