@@ -4,7 +4,7 @@
 import unicodedata
 
 __info__ = {
-	"Author": "Selig Arkin",
+	"Author": "Amanda Cameron",
 	"Version": "0.1a",
 	"Dependencies": ""
 }

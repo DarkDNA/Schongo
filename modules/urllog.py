@@ -15,7 +15,7 @@ archive = dict()
 READ_SIZE = 32000
 
 __info__ = {
-	"Author": "Selig Arkin",
+	"Author": "Amanda Cameron",
 	"Version": "1.0b",
 	"Dependencies": []
 }

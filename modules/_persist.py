@@ -8,7 +8,7 @@ persist = {}
 
 # Meta information
 __info__ = {
-	"Author": "Selig Arkin",
+	"Author": "Amanda Cameron",
 	"Version": "0.1",
 	"Dependencies": []
 }
