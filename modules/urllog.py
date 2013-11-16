@@ -241,8 +241,7 @@ def displayMeta(ctx, data, vid):
 				)
 		else:
 			s += " • No ratings"
-	
-	s += " • https://youtu.be/%s" % vid
+
 	addStatusToArchive(ctx, s, "YouTube")
 	ctx.reply(s, "YouTube")
 
