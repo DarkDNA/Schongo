@@ -8,6 +8,7 @@ import xml.dom.minidom as dom
 import re
 from modules._utils import prettyNumber, prettyTime, unescapeHtml
 import threading
+import json
 
 archive = dict()
 
@@ -23,6 +24,7 @@ __info__ = {
 
 ytRegEx = re.compile(r"(https?://)?(www\.)?youtu(be\.com/watch\?[^ ]*v=|\.be/)([^& ]+)")
 twitterRegEx = re.compile(r"(https?://)?twitter.com/(#!)?[a-zA-Z0-9_]+/status/(\d+)")
+appleRegEx = re.compile(r"https?://itunes.apple.com/.+/id([0-9]+).*")
 
 genRegEx = re.compile(r"https?://([^ ]+)")
 titleRegEx = re.compile(r"<title[^>]*>*([^<]+)</title>", re.IGNORECASE)
@@ -63,6 +65,10 @@ def showTitle(ctx, url):
 		showTwitter(ctx, twitMatch.group(3))
 		return
 
+	appleMatch = appleRegEx.match(url)
+	if appleMatch:
+		showApple(ctx, appleMatch.group(1))
+		return
 	
 	s = pretty_url(url)
 
@@ -140,6 +146,15 @@ def showTwitter(ctx, tweet_id):
 		return displayTweet(ctx, data, tweet_id)
 	except urllib.error.HTTPError:
 		ctx.reply("Invalid twitter URL", "Twitter")
+		return
+
+def showApple(ctx, store_id):
+	try:
+		data = get_url("https://itunes.apple.com/lookup?id=%s" % store_id)
+		data = json.loads(data.read().decode("utf-8"))
+		return displayApple(ctx, data, store_id)
+	except urllib.error.HTTPError:
+		ctx.reply("Invalid iTunes URL", "iTunes")
 		return
 
 
@@ -272,6 +287,57 @@ def displayTweet(ctx, data, tweet_id):
 
 	addStatusToArchive(ctx, s, "Twitter")
 	ctx.reply(s, "Twitter")
+
+def displayApple(ctx, data, app_id):
+	if data["resultCount"] == 0:
+		s = "Invalid iTunes URL"
+
+		ctx.reply(s, "iTunes")
+		return
+
+	s = "Name: "
+
+	firstResult = data["results"][0]
+
+	if "trackName" in firstResult:
+		s += firstResult["trackName"]
+	elif "collectionName" in firstResult:
+		s += firstResult["collectionName"]
+	else:
+		s += "???"
+
+	s += " • By: %s" % firstResult["artistName"]
+	s += " • Price: "
+
+	def prettyPrice(p):
+		if p == 0:
+			return "Free"
+		else:
+			return "%.2f" % p
+
+	if "price" in firstResult:
+		s += prettyPrice(firstResult["price"])
+	elif "collectionPrice" in firstResult:
+		s += prettyPrice(firstResult["collectionPrice"])
+	else:
+		s += "???"
+
+	if "currency" in firstResult:
+		s += " " + firstResult["currency"]
+
+	if "kind" in firstResult:
+		if firstResult["kind"] == "software":
+			s += " • Description: %s" % firstResult["description"].split("\n", 1)[0]
+			s += " • Version: %s" % firstResult["version"]
+
+	if "contentAdvisoryRating" in firstResult:
+		s += " • Content Rating: %s" % firstResult["contentAdvisoryRating"]
+
+	if "averageUserRating" in firstResult:
+		s += " • Rating: %s/5" % firstResult["averageUserRating"]
+
+	addStatusToArchive(ctx, s, "iTunes")
+	ctx.reply(s, "iTunes")
 
 class LookupThread(threading.Thread):
 	def __init__(self, ctx, msg):
