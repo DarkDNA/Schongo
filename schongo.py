@@ -120,6 +120,8 @@ class SchongoClient(IrcClient):
 	def onCtcp(self, chan, who, cmd, arg):
 		if cmd == "VERSION":
 			self.notice(who.nick, "\x01VERSION Schongo Bot %s\x01" % version)
+		elif cmd == "PING":
+			self.notice(who.nick, "\x01PING %s\x01" % arg)
 		else:
 			modules.fire_hook("ctcp", modules.IrcContext(self, chan, who), cmd, arg)
 
