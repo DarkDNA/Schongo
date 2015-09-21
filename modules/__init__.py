@@ -7,6 +7,10 @@ import textwrap
 import copy
 import time
 import threading
+
+import os
+import os.path
+
 from traceback import print_exc
 
 commands = {}
@@ -184,8 +188,21 @@ def load_module(mod, loadType, level=logging.WARN):
 	modInfo.loadType = loadType
 	
 	# Begin ze actual loadink!
-	
-	theMod = __import__(mod, globals(), locals(), [], 1)
+	theMod = None
+
+	modZip = os.path.abspath("./data/modules/" + mod + ".zip")
+
+	if os.path.exists(modZip):
+		logger.info("Loading zip module: %s" % modZip)
+		bkup = sys.path
+
+		sys.path = [modZip]
+
+		theMod = __import__(mod, globals(), locals(), [], 0)
+		sys.path = bkup
+	else:
+		theMod = __import__(mod, globals(), locals(), [], 1)
+
 	modInfo.module = theMod
 
 
