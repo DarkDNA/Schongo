@@ -25,8 +25,6 @@ global connections
 
 connections = {}
 
-
-
 injected_func = {}
 injected_util_func = {}
 
@@ -194,9 +192,9 @@ def load_module(mod, loadType, level=logging.WARN):
 
 	if os.path.exists(modZip):
 		logger.info("Loading zip module: %s" % modZip)
-		bkup = sys.path
 
-		sys.path = [modZip]
+		bkup = sys.path
+		sys.path = [modZip] + sys.path
 
 		theMod = __import__(mod, globals(), locals(), [], 0)
 		sys.path = bkup
@@ -275,14 +273,17 @@ def load_module(mod, loadType, level=logging.WARN):
 	return modInfo
 	
 def unload_module(mod, autoUnloading=False):
+	propName = "modules.%s" % mod
+
 	if mod not in mods:
 		if "modules.%s" % mod in sys.modules:
 			del sys.modules['modules.%s' % mod] # Make sure it's removed from the system modules table.
 		return False
+
+	if mod in sys.modules:
+		propName = mod
 	
 	# Clean up!
-
-	propName = "modules.%s" % mod
 	
 	for hook in hooks:
 		if propName in hooks[hook]:
@@ -340,7 +341,7 @@ def unload_module(mod, autoUnloading=False):
 	
 
 	del mods[mod]
-	del sys.modules['modules.%s' % mod]
+	del sys.modules[propName]
 
 # Timers
 
