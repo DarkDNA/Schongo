@@ -8,6 +8,8 @@ import copy
 import time
 import threading
 
+import importlib
+
 import os
 import os.path
 
@@ -196,6 +198,7 @@ def load_module(mod, loadType, level=logging.WARN):
 		bkup = sys.path
 		sys.path = [modZip] + sys.path
 
+		importlib.invalidate_caches()
 		theMod = __import__(mod, globals(), locals(), [], 0)
 		sys.path = bkup
 	else:
