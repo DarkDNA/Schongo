@@ -1,4 +1,5 @@
-"""Querys Wolfram|Alpha and displays the results.
+"""
+Querys Wolfram|Alpha and displays the results.
 
 ** Warning: Not all data is currently displayable **
 """
@@ -6,51 +7,55 @@
 import urllib.request, urllib.error, urllib.parse
 import xml.dom.minidom as dom
 
+from schongo.commands import command
+
 def Format_Pod(data):
-	result = []
+    result = []
 
-	for i in data.getElementsByTagName("subpod"):
-		d = i.getElementsByTagName("plaintext")
+    for i in data.getElementsByTagName("subpod"):
+        d = i.getElementsByTagName("plaintext")
 
-		if not len(d):
-			continue
-		
-		d = d[0]
+        if not len(d):
+            continue
 
-		dat = ""
+        d = d[0]
 
-		if d.hasAttribute("title") and d.getAttribute("title") != "":
-			dat = d.getAttribute("title") + ": "
+        dat = ""
 
-		dat += d.firstChild.data
+        if d.hasAttribute("title") and d.getAttribute("title") != "":
+            dat = d.getAttribute("title") + ": "
 
-		dat = dat.replace("\n", " • ")
+        dat += d.firstChild.data
 
-		result.append(dat)
+        dat = dat.replace("\n", " • ")
 
-	title = "Result"
+        result.append(dat)
 
-	if data.hasAttribute("title") and data.getAttribute("title") != "":
-		title = data.getAttribute("title")
-	
-	return "%s: %s" % (title, " / ".join(result))
+    title = "Result"
+
+    if data.hasAttribute("title") and data.getAttribute("title") != "":
+        title = data.getAttribute("title")
+
+    return "%s: %s" % (title, " / ".join(result))
+
 
 def onLoad():
-	@command("wolfram")
-	def cmd_wolfram(ctx, cmd, arg):
-		resp = urllib.request.urlopen("http://api.wolframalpha.com/v2/query?input=%s&format=plaintext&appid=%s" % (urllib.parse.quote(arg), cfg.get("key")))
+    @command("wolfram")
+    def cmd_wolfram(ctx, cmd, arg):
+        resp = urllib.request.urlopen("http://api.wolframalpha.com/v2/query?input=%s&format=plaintext&appid=%s" % (
+        urllib.parse.quote(arg), cfg.get("key")))
 
-		xml = dom.parse(resp)
+        xml = dom.parse(resp)
 
-		i = 0
+        i = 0
 
-		for pod in xml.getElementsByTagName("pod"):
-			ctx.reply(Format_Pod(pod), "W|A", parse=False)
-			i += 1
+        for pod in xml.getElementsByTagName("pod"):
+            ctx.reply(Format_Pod(pod), "W|A", parse=False)
+            i += 1
 
-			if i > 3:
-				ctx.reply("More can be obtained from the website.", "W|A")
-				break
+            if i > 3:
+                ctx.reply("More can be obtained from the website.", "W|A")
+                break
 
-		if i == 0:
-			ctx.reply("No valid response was received.", "W|A")
+        if i == 0:
+            ctx.reply("No valid response was received.", "W|A")

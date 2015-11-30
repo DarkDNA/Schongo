@@ -1,3 +1,4 @@
 *.pyc
 config.cfg
 config-debug.cfg
+data/mod_persist.pickle

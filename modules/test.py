@@ -11,8 +11,8 @@ __info__ = {
     ]
 }
 
-def onLoad():
 
+def onLoad():
     @timer(15, True)
     def bacon_timer(ctx):
         ctx.reply(cfg.get("test timer"))
@@ -60,7 +60,7 @@ def onLoad():
     @command("test say", 2)
     def say_cmd(ctx, cmd, arg, *args):
         where, what = arg.split(' ', 1)
-        IrcContext.fromString(where, ctx).reply("Ohai from %s! %s" % ( ctx.chan, what))
+        IrcContext.fromString(where, ctx).reply("Ohai from %s! %s" % (ctx.chan, what))
 
     @hook("message")
     def crash_hook(ctx, msg):
@@ -71,9 +71,7 @@ def onLoad():
     def join_hook(ctx):
         if ctx.chan == "#schongo-dev":
             ctx.reply("Welcome!")
-    
+
     @hook("topic")
     def topic_hook(ctx, topic):
         ctx.reply("%s is a topic changin bitch!" % ctx.who.nick, "Topic Alarm")
-    
-    

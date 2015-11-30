@@ -4,13 +4,15 @@ Working on an idea, if this works, authorized users should be able to install ne
 import hashlib
 import time
 import os
+
 __info__ = {
-	"Author": "Ross Delinger",
-	"Version": "1.0",
-	"Dependencies": []
+    "Author": "Ross Delinger",
+    "Version": "1.0",
+    "Dependencies": []
 }
 users = dict()
 authed = dict()
+
 
 def registerUser(nick, password):
     global users
@@ -19,11 +21,14 @@ def registerUser(nick, password):
         # add a new user
         users[nick] = password
 
+
 def authenticate(nick, password):
     global users
     global authed
-    print nick
-    print password
+    print
+    nick
+    print
+    password
     password = hashlib.md5(password).digest()
     if users.has_key(nick):
         if users[nick] == password:
@@ -31,12 +36,14 @@ def authenticate(nick, password):
             return True
     return False
 
+
 def deauthenticate(nick):
     global authed
     if authed.has_key(nick):
         del authed[nick]
         return True
     return False
+
 
 def isAuthenticated(nick):
     global authed
@@ -50,7 +57,7 @@ def onLoad():
     def front_end_loader(ctx):
         # HAAAAXXXXXXX
         registerUser("Posiden", "12345")
-        
+
     @command("register", 1, 1)
     def reg(ctx, cmd, arg, *args):
         if ctx.isPrivate and isAuthenticated(ctx.who.nick):
@@ -82,11 +89,9 @@ def onLoad():
             currentTime = time.time()
             toDel = list()
             for user in authed:
-                if (currentTime - authed[user]) >= 300: #permissions time out after 5 min
+                if (currentTime - authed[user]) >= 300:  # permissions time out after 5 min
                     toDel.append(user)
 
             for u in toDel:
                 del authed[u]
         return True
-        
-            
